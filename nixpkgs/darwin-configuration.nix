@@ -41,6 +41,9 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
 
+  # Sandbox builds by default; jailbreak as needed using __noChroot = true
+  nix.useSandbox = "relaxed";
+
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.bash.enable = true;
   # programs.zsh.enable = true;
