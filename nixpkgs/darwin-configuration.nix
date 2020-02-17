@@ -295,6 +295,7 @@ with {
     # From then on it should work without problems.
     nixPath = [
        #"darwin-config=$HOME/.nixpkgs/darwin-configuration.nix"
+              "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
                 "home=$HOME"
           "nix-config=$HOME/repos/nix-config"
          "nix-helpers=$HOME/repos/nix-helpers"
