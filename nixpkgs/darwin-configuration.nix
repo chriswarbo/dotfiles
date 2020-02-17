@@ -1,9 +1,7 @@
 { config, pkgs, ... }:
 
-# TODO: Get Firefox and Yabai from
+# TODO: Get Firefox from
 #https://github.com/cmacrae/config.git
-
-# Enable services.skhd.enable = true;
 
 with builtins;
 with {
