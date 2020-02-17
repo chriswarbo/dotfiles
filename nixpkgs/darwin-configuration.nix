@@ -335,6 +335,50 @@ with {
   programs = {
     # Create /etc/bashrc that loads the nix-darwin environment.
     bash.enable = true;
+
+    # Set up zsh (default on macOS Catalina) to load the nix-darwin environment
+    zsh = {
+      enable               = true;
+      interactiveShellInit = ''
+        # Taken from default macOS /etc/zshrc 2020-02-17 so that darwin-nix can
+        # manage the file
+
+        # Correctly display UTF-8 with combining characters.
+        if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
+          setopt combiningchars
+        fi
+
+        disable log
+
+        [ -r "/etc/zshrc_$TERM_PROGRAM" ] && . "/etc/zshrc_$TERM_PROGRAM"
+
+        # The following was also in /etc/zshrc on 2020-02-17, but is clearly not
+        # there by default
+        # Nix
+        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]
+        then
+          . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+        fi
+        # End Nix
+
+        # This does exist in /etc/zshenv, but doesn't seem to work, so copy it
+        #if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]; then
+          . /nix/store/5r56ykssv4wrnh5pdl1vdpjn27xfs8wg-set-environment
+        #fi
+      '';
+      loginShellInit = ''
+        # Taken from default macOS /etc/zprofile 2020-02-17 so that darwin-nix
+        # can manage the file
+        if [ -x /usr/libexec/path_helper ]; then
+          eval `/usr/libexec/path_helper -s`
+        fi
+      '';
+
+      # I don't like nix-darwin's default, and it screws with Emacs
+      promptInit = ''
+        autoload -U promptinit && promptinit && prompt redhat
+      '';
+    };
   };
 
   services = {
