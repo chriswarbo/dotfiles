@@ -175,6 +175,9 @@ with {
         docker  # FIXME: Do we actually need this command in the global env?
         #firefox  # FIXME: Broken on macOS
 
+        lorri   # Needed by lorri launchd service defined below
+        direnv  # Needed by lorri
+
         (installApplication rec {
           name       = "Postman";
           version    = "7.18.0";
@@ -238,6 +241,23 @@ with {
       pkgs.terminus_font
       pkgs.ttf_bitstream_vera
     ];
+  };
+
+  launchd.user.agents = {
+    "lorri" = {
+      serviceConfig = {
+        WorkingDirectory     = (builtins.getEnv "HOME");
+        EnvironmentVariables = {};
+        KeepAlive            = true;
+        RunAtLoad            = true;
+        StandardOutPath      = "/var/tmp/lorri.log";
+        StandardErrorPath    = "/var/tmp/lorri.log";
+      };
+      script = ''
+        source ${config.system.build.setEnvironment}
+        exec ${pkgs.lorri}/bin/lorri daemon
+      '';
+    };
   };
 
   nix = {
