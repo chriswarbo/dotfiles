@@ -76,8 +76,8 @@ with lib;
         };
         {
           space = {
-            # balance size of windows; note that we need to add '-' for skhd
-            balance = shift (alt "- 0");
+            # balance size of windows; write explicitly to get +/- right
+            balance = "shift + alt - 0";
 
             focus = {
               "recent" = mod "tab";
