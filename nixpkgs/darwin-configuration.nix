@@ -409,9 +409,11 @@ with {
     # TODO: Turn into a module and add to imports instead
     skhd = import ./skhd.nix {
       inherit (pkgs)
+        fetchFromGitHub
         foldAttrs'
         lib
         prefixFlatten
+        skhd
         ;
     };
 

@@ -1,7 +1,17 @@
-{ foldAttrs', lib, prefixFlatten }:
+{ fetchFromGitHub, foldAttrs', lib, prefixFlatten, skhd }:
 with lib;
 {
-  enable     = true;
+  enable  = true;
+  package = skhd.overrideAttrs (old: rec {
+    version = "0.3.5";
+    src     = fetchFromGitHub {
+      owner  = "koekeishiya";
+      repo   = "skhd";
+      rev    = "v${version}";
+      sha256 = "0x099979kgpim18r0vi9vd821qnv0rl3rkj0nd1nx3wljxgf7mrg";
+    };
+  });
+
   # TODO: Refactor
   # TODO: Pick more ergonomic keys (remap Option to Super?)
   skhdConfig =
