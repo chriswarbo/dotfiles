@@ -94,8 +94,10 @@ with { unwords = concatStringsSep " "; };
                                    "yabai -m window --focus first";
             "${       mod "k" }" = "yabai -m window --focus prev || " +
                                    "yabai -m window --focus last";
-            "${shift (mod "j")}" = "yabai -m window --swap  next";
-            "${shift (mod "k")}" = "yabai -m window --swap  prev";
+            "${shift (mod "j")}" = "yabai -m window --swap  next || " +
+                                   "yabai -m window --swap  first";
+            "${shift (mod "k")}" = "yabai -m window --swap  prev || " +
+                                   "yabai -m window --swap  last";
           }
 
           # Hotkeys for switching to a particular space (by label)
