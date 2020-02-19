@@ -77,7 +77,7 @@ with lib;
           # The main 'hotkey' for invoking Yabai actions. Note that this
           # function adds a '-' that skhd expects, so it should come at the end
           # of any other modifiers (e.g. alt or shift)
-          mod = k: "cmd + ctrl - ${k}";
+          mod = k: "lalt - ${k}";
 
           # Extra modifiers. Note that these don't add the '-' that skhd expects
           # at the end of the modifiers.
