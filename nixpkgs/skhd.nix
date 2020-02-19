@@ -169,8 +169,9 @@ with { unwords = concatStringsSep " "; };
 
           # General commands
           {
-            "${mod "space" }" = "yabai -m window --toggle split";
-            "${mod "f"     }" = "yabai -m window --toggle zoom-parent";
+            "${       mod "space"}" = "yabai -m window --toggle split";
+            "${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
+            "${shift (mod "c")   }" = "yabai -m window --close";
 
             # Treat "west" area like XMonad's "main" area
             "${mod "return"}" = "yabai -m window --swap west";
