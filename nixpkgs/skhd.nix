@@ -133,6 +133,12 @@ with { unwords = concatStringsSep " "; };
                 "done"
             ];
 
+            # Get the focused display (the display of the focused space)
+            focusedDisplay = unwords [
+              "yabai -m query --spaces |"
+              "jq 'map(select(.focused | . == 1)) | .[] | .display'"
+            ];
+
             go = n: with { s = toString n; }; unwords [
               "${ensureDisplaysHaveSpaces};"
               # Move the desired space to the focused display, then focus it
