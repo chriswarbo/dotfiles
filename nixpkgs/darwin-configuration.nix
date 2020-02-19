@@ -453,28 +453,6 @@ with {
     keyboard = {
       enableKeyMapping       = true;
       remapCapsLockToControl = true;
-      userKeyMapping         =
-        with {
-          keyCode = hex:
-            with pkgs.lib;
-            assert hasPrefix "0x" hex || pkgs.die {
-              inherit hex;
-              error = "keyCode requires (string of) hex input, beginning 0x";
-            };
-            import (pkgs.runCommand "keyCode-${hex}" {} ''
-               N=$((16#${removePrefix "0x" hex}))
-            BASE=$((16#700000000))
-            echo $(( BASE + N )) > "$out"
-          '');
-        };
-        [
-          {
-            # Remap Left Option key (AKA Left Alt) to Fn, so we can bind it as a
-            # hyper key with skhd.
-            #HIDKeyboardModifierMappingSrc = keyCode "0xE2";
-            #HIDKeyboardModifierMappingDst = keyCode "0x3F";
-          }
-      ];
     };
 
     # Used for backwards compatibility, read the changelog before changing.
