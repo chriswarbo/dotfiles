@@ -349,6 +349,22 @@ with {
       # Provides 'devGui', 'netCli', etc.
       (self: super: builtins.getAttr "overrides"
         (import <nix-config/overrides/metaPackages.nix> self super))
+
+      # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
+      (self: super: {
+        emacs = super.emacs.overrideAttrs (old: {
+          patches = (old.patches or []) ++ [
+            (super.fetchurl {
+              url = concatStringsSep "/" [
+                "https://github.com/d12frosted/homebrew-emacs-plus/raw"
+                "95e2add191d426ebb19ff150a517d1b0dc8cb676"
+                "patches/fix-window-role.patch"
+              ];
+              sha256 = "0vfz99xi0mn3v7jzghd7f49j3x3b24xmd1gcxhdgwkjnjlm614mf";
+            })
+          ];
+        });
+      })
     ];
   };
 
