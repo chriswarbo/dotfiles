@@ -135,7 +135,8 @@ with { unwords = concatStringsSep " "; };
 
             go = n: with { s = toString n; }; unwords [
               "${ensureDisplaysHaveSpaces};"
-              "yabai -m space l${s} --display;"
+              # Move the desired space to the focused display, then focus it
+              "yabai -m space l${s} --display $(${focusedDisplay});"
               "yabai -m space --focus l${s}"
             ];
           };
