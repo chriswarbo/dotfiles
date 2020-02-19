@@ -1,4 +1,5 @@
-{ fetchFromGitHub, foldAttrs', lib, prefixFlatten, skhd }:
+{ fetchFromGitHub, foldAttrs', lib, merge, prefixFlatten, skhd }:
+with builtins;
 with lib;
 with { unwords = concatStringsSep " "; };
 {
@@ -85,68 +86,151 @@ with { unwords = concatStringsSep " "; };
           alt   = k: "alt   + ${k}";
           shift = k: "shift + ${k}";
         };
-        {
-          # Cycle focus between windows in this space. If we run out, roll over
-          # to the other "end"
-          "${mod "j"}" = "yabai -m window --focus next || yabai -m window --focus first";
-          "${mod "k"}" = "yabai -m window --focus prev || yabai -m window --focus last";
+        merge [
+          # Focusing and moving windows. If we hit either end of the window
+          # list, roll over to the other.
+          {
+            "${       mod "j" }" = "yabai -m window --focus next || " +
+                                   "yabai -m window --focus first";
+            "${       mod "k" }" = "yabai -m window --focus prev || " +
+                                   "yabai -m window --focus last";
+            "${shift (mod "j")}" = "yabai -m window --swap  next";
+            "${shift (mod "k")}" = "yabai -m window --swap  prev";
+          }
 
-          # Change window order
-          "${shift (mod "j")}" = "yabai -m window --swap next";
-          "${shift (mod "k")}" = "yabai -m window --swap prev";
+          # Hotkeys for switching to a particular space (by label)
+          (with rec {
+            # Bring the given space to the focused display, then focus the space:
+            # - Put two non-visible spaces on each display (in case one moves);
+            # - the current display contains this space || space --display;
+            # - space --focus N
 
-          # Hotkeys for switching to a particular space
-          "${mod "1"}" = "yabai -m space --focus 1" ;
-          "${mod "2"}" = "yabai -m space --focus 2" ;
-          "${mod "3"}" = "yabai -m space --focus 3" ;
-          "${mod "4"}" = "yabai -m space --focus 4" ;
-          "${mod "5"}" = "yabai -m space --focus 5" ;
-          "${mod "6"}" = "yabai -m space --focus 6" ;
-          "${mod "7"}" = "yabai -m space --focus 7" ;
-          "${mod "8"}" = "yabai -m space --focus 8" ;
-          "${mod "9"}" = "yabai -m space --focus 9" ;
-          "${mod "0"}" = "yabai -m space --focus 10";
+            # Picks a display with more than 2 spaces (guaranteed since we have
+            # fewer than 5 displays!)
+            pickGreedyDisplay = unwords [
+              "yabai -m query --displays |"
+              "jq 'map(select(.spaces | length | . > 2)) | .[] | .index' |"
+              "head -n1"
+            ];
 
-          # Send focused window to a particular space
-          "${shift (mod "1")}" = "yabai -m window recent --space 1" ;
-          "${shift (mod "2")}" = "yabai -m window recent --space 2" ;
-          "${shift (mod "3")}" = "yabai -m window recent --space 3" ;
-          "${shift (mod "4")}" = "yabai -m window recent --space 4" ;
-          "${shift (mod "5")}" = "yabai -m window recent --space 5" ;
-          "${shift (mod "6")}" = "yabai -m window recent --space 6" ;
-          "${shift (mod "7")}" = "yabai -m window recent --space 7" ;
-          "${shift (mod "8")}" = "yabai -m window recent --space 8" ;
-          "${shift (mod "9")}" = "yabai -m window recent --space 9" ;
-          "${shift (mod "0")}" = "yabai -m window recent --space 10";
+            # Find a non-visible space from a display with many spaces
+            pickInvisibleSpace = unwords [
+              "yabai -m query --spaces --display $(${pickGreedyDisplay}) |"
+              "jq 'map(select(.visible | . == 0)) | .[] | .index' |"
+              "head -n1"
+            ];
 
-          # Switch between displays
-          "${mod "left" }" = "yabai -m display prev";
-          "${mod "right"}" = "yabai -m display next";
+            # Make sure each display has at least two spaces, so we can move one
+            ensureDisplaysHaveSpaces = unwords [
+              # Loop through display indices which have fewer than 2 spaces
+              "yabai -m query --displays |"
+                "jq 'map(select(.spaces | length | . < 2)) | .[] | .index' |"
+                "while read -r D; do"
+                  # Move a non-visible space to display $D from one with many
+                  "yabai -m space $(${pickInvisibleSpace}) --display $D;"
+                "done"
+            ];
 
-          # Treat "west" area like XMonad's "main" area
-          "${mod "return"}" = "yabai -m window --swap west";
+            go = n: with { s = toString n; }; unwords [
+              "${ensureDisplaysHaveSpaces};"
+              "yabai -m space l${s} --display;"
+              "yabai -m space --focus l${s}"
+            ];
+          };
+          listToAttrs (map (n: {
+                             name  = mod (toString n);
+                             value = go n;
+                           })
+                           (range 0 9)))
 
-          "${mod "space"}" = "yabai -m window --toggle split";
+          # Send focused window to a particular space (by label)
+          (listToAttrs (map (n: {
+                              name  = shift (mod (toString n));
+                              value = "yabai -m window --space l${toString n}";
+                            })
+                            (range 0 9)))
 
-          # Look up window size and change it (emulate XMonad)
-          "${mod "h"}" = unwords [
-            "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
-            "&&"
-            "yabai -m window --resize right:-60:0"
-            "||"
-            "yabai -m window --resize left:-60:0"
-          ];
-          "${mod "l"}" = unwords [
-            "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
-            "&&"
-            "yabai -m window --resize right:60:0"
-            "||"
-            "yabai -m window --resize left:60:0"
-          ];
+          # Switch between displays, cycling around when we hit the end of list
+          {
+            "${mod "left" }" = "yabai -m display --focus prev || " +
+                               "yabai -m display --focus last";
+            "${mod "right"}" = "yabai -m display --focus next || " +
+                               "yabai -m display --focus first";
+          }
 
-          # Vertical resizing is easier: just change where the bottom is
-          "${mod "i"}" = "yabai -m window --resize bottom:0:-60";
-          "${mod "o"}" = "yabai -m window --resize bottom:0:60";
+          # General commands
+          {
+            # Treat "west" area like XMonad's "main" area
+            "${mod "return"}" = "yabai -m window --swap west";
+
+            "${mod "space"}" = "yabai -m window --toggle split";
+
+            # Tile/float the focused window
+            # TODO: Add queries so they only do one or the other
+            "${       mod "t" }" = "yabai -m window --toggle float";
+            "${shift (mod "t")}" = "yabai -m window --toggle float";
+          }
+
+          # Window resizing (emulates XMonad)
+          {
+            # Vertical resizing is easy: just change where the bottom is
+            "${mod "i"}" = "yabai -m window --resize bottom:0:-60";
+            "${mod "o"}" = "yabai -m window --resize bottom:0:60";
+
+            # Horizontal requires offset calculations
+            "${mod "h"}" = unwords [
+              "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
+              "&&"
+              "yabai -m window --resize right:-60:0"
+              "||"
+              "yabai -m window --resize left:-60:0"
+            ];
+            "${mod "l"}" = unwords [
+              "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
+              "&&"
+              "yabai -m window --resize right:60:0"
+              "||"
+              "yabai -m window --resize left:60:0"
+            ];
+          }
+
+          # Trigger a re-jig of our displays/spaces/etc. This would be useful to
+          # put in Yabai's startup config, but doesn't seem to work (maybe only
+          # "config" options work there?).
+          # TODO: Prefer destroying empty spaces, to reduce window shuffling
+          {
+            "${mod "r"}" = unwords ([
+              # Ensure we have 10 spaces in total
+              "while [[ $(yabai -m query --spaces | jq 'length') -gt 10 ]];"
+              "do"
+                # If there's only one space on this display, switch to another
+                "if [[ $(yabai -m query --spaces --display | jq 'length')"
+                       "-eq 1 ]];"
+                "then"
+                  "yabai -m display --focus next;"
+                  #"sleep 0.2;"
+                "fi;"
+                "yabai -m space --destroy;"
+              "done;"
+              "while [[ $(yabai -m query --spaces | jq 'length') -lt 10 ]];"
+              "do"
+                "yabai -m space --create;"
+                #"sleep 0.2"
+              "done;"
+            ] ++
+
+            # Spaces are indexed, but that order can change, e.g. when moving
+            # them between displays. We'll use labels instead, since they're
+            # more stable: the labels are "l" followed by a number (current
+            # index - 1). These labels should be used by our keybindings,
+            # rather than the indices.
+            map (n: with { s = toString (n - 1); };
+                    "yabai -m space ${toString n} --label l${s};")
+                (range 1 10) ++
+
+            # Dummy command, to prevent the previous ';' causing trouble
+            ["true"]);
+          }
 
           /*
             # balance size of windows; write explicitly to get +/- right
@@ -192,7 +276,7 @@ with { unwords = concatStringsSep " "; };
           # float / unfloat window and center on screen
           #${mod "space :"} = "yabai -m window --toggle float; yabai -m window --grid 4:4:1:1:2:2" = ;
           };*/
-        };
+        ];
     };
     foldAttrs' (key: cmd: result: result + ''
                  ${key} : ${cmd}

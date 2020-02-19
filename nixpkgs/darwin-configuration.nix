@@ -428,6 +428,7 @@ with {
         fetchFromGitHub
         foldAttrs'
         lib
+        merge
         prefixFlatten
         skhd
         ;
