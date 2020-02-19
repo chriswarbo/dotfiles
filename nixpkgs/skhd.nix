@@ -163,10 +163,11 @@ with { unwords = concatStringsSep " "; };
 
           # General commands
           {
+            "${mod "space" }" = "yabai -m window --toggle split";
+            "${mod "f"     }" = "yabai -m window --toggle zoom-parent";
+
             # Treat "west" area like XMonad's "main" area
             "${mod "return"}" = "yabai -m window --swap west";
-
-            "${mod "space"}" = "yabai -m window --toggle split";
 
             # Tile/float the focused window
             # TODO: Add queries so they only do one or the other
