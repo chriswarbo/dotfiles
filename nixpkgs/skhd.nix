@@ -1,5 +1,6 @@
 { fetchFromGitHub, foldAttrs', lib, prefixFlatten, skhd }:
 with lib;
+with { unwords = concatStringsSep " "; };
 {
   enable  = true;
   package = skhd.overrideAttrs (old: rec {
@@ -70,8 +71,7 @@ with lib;
       };
 
       # Most of our shortcuts are for yabai, since it's designed to be used
-      # in conjunction with a hotkey daemon like skhd. These attrsets follow
-      # the yabai option names to reduce boilerplate.
+      # in conjunction with a hotkey daemon like skhd.
       yabaiCfg =
         with {
           # The main 'hotkey' for invoking Yabai actions. Note that this
@@ -80,106 +80,123 @@ with lib;
           mod = k: "lalt - ${k}";
 
           # Extra modifiers. Note that these don't add the '-' that skhd expects
-          # at the end of the modifiers.
+          # at the end of the modifiers; either use them in conjunction with
+          # 'mod' e.g. 'shift (mod "j")' or put '-' explicitly e.g. 'alt "- j"'.
           alt   = k: "alt   + ${k}";
           shift = k: "shift + ${k}";
         };
         {
-          space = {
+          # Cycle focus between windows in this space. If we run out, roll over
+          # to the other "end"
+          "${mod "j"}" = "yabai -m window --focus next || yabai -m window --focus first";
+          "${mod "k"}" = "yabai -m window --focus prev || yabai -m window --focus last";
+
+          # Change window order
+          "${shift (mod "j")}" = "yabai -m window --swap next";
+          "${shift (mod "k")}" = "yabai -m window --swap prev";
+
+          # Hotkeys for switching to a particular space
+          "${mod "1"}" = "yabai -m space --focus 1" ;
+          "${mod "2"}" = "yabai -m space --focus 2" ;
+          "${mod "3"}" = "yabai -m space --focus 3" ;
+          "${mod "4"}" = "yabai -m space --focus 4" ;
+          "${mod "5"}" = "yabai -m space --focus 5" ;
+          "${mod "6"}" = "yabai -m space --focus 6" ;
+          "${mod "7"}" = "yabai -m space --focus 7" ;
+          "${mod "8"}" = "yabai -m space --focus 8" ;
+          "${mod "9"}" = "yabai -m space --focus 9" ;
+          "${mod "0"}" = "yabai -m space --focus 10";
+
+          # Send focused window to a particular space
+          "${shift (mod "1")}" = "yabai -m window recent --space 1" ;
+          "${shift (mod "2")}" = "yabai -m window recent --space 2" ;
+          "${shift (mod "3")}" = "yabai -m window recent --space 3" ;
+          "${shift (mod "4")}" = "yabai -m window recent --space 4" ;
+          "${shift (mod "5")}" = "yabai -m window recent --space 5" ;
+          "${shift (mod "6")}" = "yabai -m window recent --space 6" ;
+          "${shift (mod "7")}" = "yabai -m window recent --space 7" ;
+          "${shift (mod "8")}" = "yabai -m window recent --space 8" ;
+          "${shift (mod "9")}" = "yabai -m window recent --space 9" ;
+          "${shift (mod "0")}" = "yabai -m window recent --space 10";
+
+          # Switch between displays
+          "${mod "left" }" = "yabai -m display prev";
+          "${mod "right"}" = "yabai -m display next";
+
+          # Treat "west" area like XMonad's "main" area
+          "${mod "return"}" = "yabai -m window --swap west";
+
+          "${mod "space"}" = "yabai -m window --toggle split";
+
+          # Look up window size and change it (emulate XMonad)
+          "${mod "h"}" = unwords [
+            "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
+            "&&"
+            "yabai -m window --resize right:-60:0"
+            "||"
+            "yabai -m window --resize left:-60:0"
+          ];
+          "${mod "l"}" = unwords [
+            "expr $(yabai -m query --windows --window | jq .frame.x) \\< 20"
+            "&&"
+            "yabai -m window --resize right:60:0"
+            "||"
+            "yabai -m window --resize left:60:0"
+          ];
+
+          # Vertical resizing is easier: just change where the bottom is
+          "${mod "i"}" = "yabai -m window --resize bottom:0:-60";
+          "${mod "o"}" = "yabai -m window --resize bottom:0:60";
+
+          /*
             # balance size of windows; write explicitly to get +/- right
-            balance = "shift + alt - 0";
+            #yabai -m space --balance = "shift + alt - 0";
 
-            focus = {
-              "recent" = mod "tab";
-              "prev"   = mod "p";
-              "next"   = mod "n";
-              "1"      = mod "1";
-              "2"      = mod "2";
-              "3"      = mod "3";
-              "4"      = mod "4";
-              "5"      = mod "5";
-              "6"      = mod "6";
-              "7"      = mod "7";
-              "8"      = mod "8";
-              "9"      = mod "9";
-              "10"     = mod "0";
+            yabai -m space --focus = {
+              "yabai -m space --focus recent" = mod "tab";
+              "yabai -m space --focus prev"   = mod "p";
+              "yabai -m space --focus next"   = mod "n";
+
             };
           };
-          window = {
-            focus = {
-              "west"  = mod "h";
-              "south" = mod "j";
-              "north" = mod "k";
-              "east"  = mod "l";
-            };
 
-            # make floating window fill screen
-            grid = { "1:1:0:0:1:1" = mod "f"; };
+          "yabai -m window --focus west"  = mod "h";
+          "yabai -m window --focus south" = mod "j";
+          "yabai -m window --focus north" = mod "k";
+          "yabai -m window --focus east"  = mod "l";
 
-            # set insertion point in focused container
-            insert = {
-              "west"  = alt (mod "h");
-              "south" = alt (mod "j");
-              "north" = alt (mod "k");
-              "east"  = alt (mod "l");
-            };
+          # make floating window fill screen
+          #yabai -m window --grid "1:1:0:0:1:1" = mod "f";
 
-            # send window to desktop and follow focus
-            space = {
-              "recent; yabai -m space --focus recent" = shift (mod "tab");
-              "prev  ; yabai -m space --focus prev"   = shift (mod "p"  );
-              "next  ; yabai -m space --focus next"   = shift (mod "n"  );
-              "1     ; yabai -m space --focus 1"      = shift (mod "1"  );
-              "2     ; yabai -m space --focus 2"      = shift (mod "2"  );
-              "3     ; yabai -m space --focus 3"      = shift (mod "3"  );
-              "4     ; yabai -m space --focus 4"      = shift (mod "4"  );
-              "5     ; yabai -m space --focus 5"      = shift (mod "5"  );
-              "6     ; yabai -m space --focus 6"      = shift (mod "6"  );
-              "7     ; yabai -m space --focus 7"      = shift (mod "7"  );
-              "8     ; yabai -m space --focus 8"      = shift (mod "8"  );
-              "9     ; yabai -m space --focus 9"      = shift (mod "9"  );
-              "10    ; yabai -m space --focus 10"     = shift (mod "0"  );
-            };
-            toggle = {
-              # toggle window split type
-              split = mod "e";
+          # set insertion point in focused container
+          "yabai -m window --insert west"  = alt (mod "h");
+          "yabai -m window --insert south" = alt (mod "j");
+          "yabai -m window --insert north" = alt (mod "k");
+          "yabai -m window --insert east"  = alt (mod "l");
 
-              # float / unfloat window and center on screen
-              "float; yabai -m window --grid 4:4:1:1:2:2" = mod "space :";
-            };
+          # send window to desktop and follow focus
+          "yabai -m window --space recent; yabai -m space --focus recent" = shift (mod "tab");
+          "yabai -m window --space prev  ; yabai -m space --focus prev"   = shift (mod "p"  );
+          "yabai -m window --space next  ; yabai -m space --focus next"   = shift (mod "n"  );
+          "yabai -m window --space 1     ; yabai -m space --focus 1"      = shift (mod "1"  );
+          "yabai -m window --space 2     ; yabai -m space --focus 2"      = shift (mod "2"  );
+          "yabai -m window --space 3     ; yabai -m space --focus 3"      = shift (mod "3"  );
+          "yabai -m window --space 4     ; yabai -m space --focus 4"      = shift (mod "4"  );
+          "yabai -m window --space 5     ; yabai -m space --focus 5"      = shift (mod "5"  );
+          "yabai -m window --space 6     ; yabai -m space --focus 6"      = shift (mod "6"  );
+          "yabai -m window --space 7     ; yabai -m space --focus 7"      = shift (mod "7"  );
+          "yabai -m window --space 8     ; yabai -m space --focus 8"      = shift (mod "8"  );
+          "yabai -m window --space 9     ; yabai -m space --focus 9"      = shift (mod "9"  );
+          "yabai -m window --space 10    ; yabai -m space --focus 10"     = shift (mod "0"  );
 
-            # move window
-            warp = {
-              "west"  = shift (mod "h");
-              "south" = shift (mod "j");
-              "north" = shift (mod "k");
-              "east"  = shift (mod "l");
-            };
-          };
+          # float / unfloat window and center on screen
+          #${mod "space :"} = "yabai -m window --toggle float; yabai -m window --grid 4:4:1:1:2:2" = ;
+          };*/
         };
-
-      # Add boilerplate to option names: '-m' at the outer level, '--' for inner
-      prefixed = mapAttrs'
-        (m: x: {
-          name  = "yabai -m ${m} ";
-          value = mapAttrs'
-            (option: y: {
-              name  = "--${option} ";
-              # Some options are used on their own, others take suboptions
-              value = if isString y
-                         then { "" = y; }
-                         else y;
-            })
-            x;
-        })
-        yabaiCfg;
-
-      # Turn nested attrsets into one big attrset
-      processed = prefixFlatten (prefixFlatten prefixed);
     };
-    foldAttrs' (cmd: key: result: result + ''
+    foldAttrs' (key: cmd: result: result + ''
                  ${key} : ${cmd}
                '')
                ""
-               processed;
+               yabaiCfg;
 }
