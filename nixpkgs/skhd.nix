@@ -1,7 +1,10 @@
 { fetchFromGitHub, foldAttrs', lib, merge, prefixFlatten, skhd, wrap }:
 with builtins;
 with lib;
-with { unwords = concatStringsSep " "; };
+with rec {
+  unlines = concatStringsSep "\n";
+  unwords = concatStringsSep " ";
+};
 {
   enable  = true;
   package = skhd.overrideAttrs (old: rec {
