@@ -95,6 +95,7 @@ with rec {
           # of hard-coding, to ensure consistency when changing the number.
           spaces = range 1 9;  # Ignore 0 to avoid off-by-one nonsense
           count  = toString (length spaces);
+          labels = map (n: "l${toString n}") spaces;
 
           # The main 'hotkey' for invoking Yabai actions. Note that this
           # function adds a '-' that skhd expects, so it should come at the end
@@ -118,26 +119,84 @@ with rec {
           # TODO: Prefer destroying empty spaces, to reduce window shuffling
           fixUpSpaces = wrap {
             name   = "fixUpSpaces";
+            vars   = {
+              findUnlabelled = wrap {
+                name = "findUnlabelled";
+                script = ''
+                  #!/usr/bin/env bash
+                  set -e
+
+                  # Assume we didn't find anything
+                  CODE=1
+
+                  # Note: 'label' is a keyword in jq
+                  UNLABELLED=$(yabai -m query --spaces | jq '${unwords [
+                    "map(select(.label as $l      |"
+                                "${toJSON labels} |"
+                                "map(. == $l)     |"
+                                "any | not))      |"
+                    "map(.index)"
+                  ]}')
+                  if echo "$UNLABELLED" | jq -e 'length | . > 0' > /dev/null
+                  then
+                    CODE=0
+                    echo "$UNLABELLED" | jq '.[]'
+                  fi
+
+                  # Look for spaces with duplicate labels
+                  ${unlines
+                    (map (l: ''
+                           if yabai -m query --spaces | jq -e '${unwords [
+                             "map(select(.label | . == ${toJSON l} )) |"
+                             "length | . > 1"
+                           ]}' > /dev/null
+                           then
+                             # This label is applied to multiple spaces, spit
+                             # out the index of one of them (arbitrarily)
+                             yabai -m query --spaces | jq '${unwords [
+                               "map(select(.label | . == ${toJSON l} )) |"
+                               ".[0] | .index"
+                             ]}'
+                             CODE=0
+                           fi
+                         '')
+                         labels)}
+
+                  # Let other applications know if we found anything
+                  # Note that in normal operation we should only be called when
+                  # we need to find a space for a label, which implies that
+                  # there should be at least one available; hence the warning.
+                  [[ "$CODE" -eq 0 ]] ||
+                    echo "Warning: Couldn't find spaces with dodgy labels" 1>&2
+                  exit "$CODE"
+                '';
+              };
+            };
             script = ''
               #!/usr/bin/env bash
               set -e
 
               # Ensure we have ${count} spaces in total
+              D=$(yabai -m query --spaces |
+                  jq 'map(select(.focused == 1)) | .[] | .display')
               while [[ $(yabai -m query --spaces | jq 'length') -gt ${count} ]]
               do
+                echo "Need to add more spaces" 1>&2
                 # If there's only one space on this display, switch to another
                 if [[ $(yabai -m query --spaces --display |
                         jq 'length') -eq 1 ]]
                 then
-                  yabai -m display --focus next
-                  #sleep 0.2
+                  echo "Switching display to avoid underpopulation"
+                  yabai -m display --focus next || yabai -m display --focus prev
                 fi
                 yabai -m space --destroy
               done
+              yabai -m display --focus "$D" || true
+              unset D
               while [[ $(yabai -m query --spaces | jq 'length') -lt ${count} ]]
               do
+                echo "Need to create more spaces" 1>&2
                 yabai -m space --create
-                #sleep 0.2
               done
 
               # Spaces are indexed, but that order can change, e.g. when moving
@@ -145,8 +204,26 @@ with rec {
               # more stable: the labels are "l" followed by the current index.
               # These labels should be used by our keybindings, rather than the
               # indices.
-              ${unlines (map (n: with { s = toString n; };
-                               "yabai -m space ${toString n} --label l${s};")
+              echo "Labelling spaces" 1>&2
+              ${unlines (map (n: with { s = toString n; }; ''
+                               # Skip this label if a space already has it
+                               if yabai -m query --spaces |
+                                  jq -e '${unwords [
+                                    "map(select(.label == \"l${s}\")) |"
+                                    "length | . == 0"
+                                  ]}' > /dev/null
+                               then
+                                 # Find a space with a dodgy or duplicate label.
+                                 # If we're here then it must be the case that:
+                                 #  - We've got the right number of spaces
+                                 #  - There isn't a space with this label
+                                 # This implies that there must be a space with
+                                 # no label, or a dodgy label, or a duplicate
+                                 # label, which findUnlabelled will give us
+                                 yabai -m space $($findUnlabelled | head -n1) \
+                                       --label l${s} || true
+                               fi
+                             '')
                              spaces)}
             '';
           };
@@ -187,9 +264,14 @@ with rec {
           (with helpers (self: {
             # If our spaces aren't labelled, something is up
             maybeFixSpaces = ''
-              yabai -m query --spaces | jq -e 'map(.label) | sort | . == ${
+              if yabai -m query --spaces | jq -e 'map(.label) | sort | . != ${
                 toJSON (map (n: "l${toString n}") spaces)
-              }' || ${fixUpSpaces}
+              }' > /dev/null
+              then
+                echo "Fixing up spaces first" 1>&2
+                ${fixUpSpaces}
+              fi
+              true
             '';
 
             # Picks a display with more than 2 spaces (guaranteed since we have
@@ -214,8 +296,9 @@ with rec {
                 jq 'map(select(.spaces | length | . < 2)) | .[] | .index' |
                 while read -r D
                 do
-                  # Move a non-visible space to display $D from one with many
-                  yabai -m space $(${self.pickInvisibleSpace}) --display $D
+                  echo "Display $D is low on spaces, moving one over" 1>&2
+                  yabai -m space $(${self.pickInvisibleSpace}) --display $D ||
+                    true
                 done
             '';
 
