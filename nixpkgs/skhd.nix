@@ -137,6 +137,24 @@ with rec {
                              spaces)}
             '';
           };
+
+          # Force all Emacs windows to be "zoomed", i.e. take up their whole
+          # space. Since Emacs doesn't tile nicely, this at least resizes it
+          # to fit its current display.
+          fixUpEmacs = wrap {
+            name   = "fixUpEmacs";
+            script = ''
+              #!/usr/bin/env bash
+              set -e
+              osascript -e 'tell application "Emacs"
+                              repeat with x from 1 to (count windows)
+                                tell window x
+                                  set zoomed to true
+                                end tell
+                              end repeat
+                            end tell'
+            '';
+          };
         };
         merge [
           # Focusing and moving windows. If we hit either end of the window
@@ -230,6 +248,7 @@ with rec {
 
             # Force a re-jig of spaces
             "${mod "r"}" = "${fixUpSpaces}";
+            "${mod "e"}" = "${fixUpEmacs }";
 
             # Tile/float the focused window
             # TODO: Add queries so they only do one or the other
