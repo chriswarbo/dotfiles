@@ -4,6 +4,19 @@ with lib;
 with rec {
   unlines = concatStringsSep "\n";
   unwords = concatStringsSep " ";
+
+  # Send a set of helper scripts through 'wrap'. To allow scripts to call each
+  # other, we take the fixed-point of a set-generating function (i.e. we pass it
+  # a 'self' argument).
+  helpers = f: mapAttrs (name: script: wrap {
+                          inherit name;
+                          script = ''
+                            #!/usr/bin/env bash
+                            set -e
+                            ${script}
+                          '';
+                        })
+                        (f (helpers f));
 };
 {
   enable  = true;
@@ -171,54 +184,51 @@ with rec {
           }
 
           # Hotkeys for switching to a particular space (by label)
-          (with rec {
-            # Bring the given space to the focused display, then focus the space:
-            # - Put two non-visible spaces on each display (in case one moves);
-            # - the current display contains this space || space --display;
-            # - space --focus N
+          (with helpers (self: {
 
             # Picks a display with more than 2 spaces (guaranteed since we have
             # fewer than 5 displays!)
-            pickGreedyDisplay = unwords [
-              "yabai -m query --displays |"
-              "jq 'map(select(.spaces | length | . > 2)) | .[] | .index' |"
-              "head -n1"
-            ];
+            pickGreedyDisplay = ''
+              yabai -m query --displays |
+                jq 'map(select(.spaces | length | . > 2)) | .[] | .index' |
+                head -n1
+            '';
 
             # Find a non-visible space from a display with many spaces
-            pickInvisibleSpace = unwords [
-              "yabai -m query --spaces --display $(${pickGreedyDisplay}) |"
-              "jq 'map(select(.visible | . == 0)) | .[] | .index' |"
-              "head -n1"
-            ];
+            pickInvisibleSpace = ''
+              yabai -m query --spaces --display $(${self.pickGreedyDisplay}) |
+                jq 'map(select(.visible | . == 0)) | .[] | .index' |
+                head -n1
+            '';
 
             # Make sure each display has at least two spaces, so we can move one
-            ensureDisplaysHaveSpaces = unwords [
+            ensureDisplaysHaveSpaces = ''
               # Loop through display indices which have fewer than 2 spaces
-              "yabai -m query --displays |"
-                "jq 'map(select(.spaces | length | . < 2)) | .[] | .index' |"
-                "while read -r D; do"
+              yabai -m query --displays |
+                jq 'map(select(.spaces | length | . < 2)) | .[] | .index' |
+                while read -r D
+                do
                   # Move a non-visible space to display $D from one with many
-                  "yabai -m space $(${pickInvisibleSpace}) --display $D;"
-                "done"
-            ];
+                  yabai -m space $(${self.pickInvisibleSpace}) --display $D
+                done
+            '';
 
             # Get the focused display (the display of the focused space)
-            focusedDisplay = unwords [
-              "yabai -m query --spaces |"
-              "jq 'map(select(.focused | . == 1)) | .[] | .display'"
-            ];
-
-            go = n: with { s = toString n; }; unwords [
-              "${ensureDisplaysHaveSpaces};"
-              # Move the desired space to the focused display, then focus it
-              "yabai -m space l${s} --display $(${focusedDisplay});"
-              "yabai -m space --focus l${s}"
-            ];
-          };
-          listToAttrs (map (n: {
-                             name  = mod (toString n);
-                             value = go n;
+            focusedDisplay = ''
+              yabai -m query --spaces |
+                jq 'map(select(.focused | . == 1)) | .[] | .display'
+            '';
+          });
+          listToAttrs (map (n: with { s = toString n; }; {
+                             name  = mod s;
+                             value = unwords [
+                               "${ensureDisplaysHaveSpaces};"
+                               # Move the desired space to the focused display,
+                               # then focus it
+                               "yabai -m space l${s} --display $(${
+                                 focusedDisplay});"
+                               "yabai -m space --focus l${s}"
+                             ];
                            })
                            spaces))
 
