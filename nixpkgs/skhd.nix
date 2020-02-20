@@ -185,6 +185,12 @@ with rec {
 
           # Hotkeys for switching to a particular space (by label)
           (with helpers (self: {
+            # If our spaces aren't labelled, something is up
+            maybeFixSpaces = ''
+              yabai -m query --spaces | jq -e 'map(.label) | sort | . == ${
+                toJSON (map (n: "l${toString n}") spaces)
+              }' || ${fixUpSpaces}
+            '';
 
             # Picks a display with more than 2 spaces (guaranteed since we have
             # fewer than 5 displays!)
@@ -222,6 +228,7 @@ with rec {
           listToAttrs (map (n: with { s = toString n; }; {
                              name  = mod s;
                              value = unwords [
+                               "${maybeFixSpaces};"
                                "${ensureDisplaysHaveSpaces};"
                                # Move the desired space to the focused display,
                                # then focus it
