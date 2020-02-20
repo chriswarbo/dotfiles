@@ -77,7 +77,12 @@ with rec {
       # Most of our shortcuts are for yabai, since it's designed to be used
       # in conjunction with a hotkey daemon like skhd.
       yabaiCfg =
-        with {
+        with rec {
+          # The spaces we're going to use. Always use these variables, instead
+          # of hard-coding, to ensure consistency when changing the number.
+          spaces = range 1 9;  # Ignore 0 to avoid off-by-one nonsense
+          count  = toString (length spaces);
+
           # The main 'hotkey' for invoking Yabai actions. Note that this
           # function adds a '-' that skhd expects, so it should come at the end
           # of any other modifiers (e.g. alt or shift)
@@ -88,6 +93,50 @@ with rec {
           # 'mod' e.g. 'shift (mod "j")' or put '-' explicitly e.g. 'alt "- j"'.
           alt   = k: "alt   + ${k}";
           shift = k: "shift + ${k}";
+
+          # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
+          #  - We want a fixed number of spaces (destroy/create to enforce this)
+          #  - Spaces shouldn't be tied to displays.
+          #  - "Switch to space N" should bring that space to the focused
+          #    display, rather than changing which display is focused.
+          #
+          # This would be nice to put in Yabai's startup config, but doesn't
+          # seem to work (maybe only "config" options work there?).
+          # TODO: Prefer destroying empty spaces, to reduce window shuffling
+          fixUpSpaces = wrap {
+            name   = "fixUpSpaces";
+            script = ''
+              #!/usr/bin/env bash
+              set -e
+
+              # Ensure we have ${count} spaces in total
+              while [[ $(yabai -m query --spaces | jq 'length') -gt ${count} ]]
+              do
+                # If there's only one space on this display, switch to another
+                if [[ $(yabai -m query --spaces --display |
+                        jq 'length') -eq 1 ]]
+                then
+                  yabai -m display --focus next
+                  #sleep 0.2
+                fi
+                yabai -m space --destroy
+              done
+              while [[ $(yabai -m query --spaces | jq 'length') -lt ${count} ]]
+              do
+                yabai -m space --create
+                #sleep 0.2
+              done
+
+              # Spaces are indexed, but that order can change, e.g. when moving
+              # them between displays. We'll use labels instead, since they're
+              # more stable: the labels are "l" followed by the current index.
+              # These labels should be used by our keybindings, rather than the
+              # indices.
+              ${unlines (map (n: with { s = toString n; };
+                               "yabai -m space ${toString n} --label l${s};")
+                             spaces)}
+            '';
+          };
         };
         merge [
           # Focusing and moving windows. If we hit either end of the window
@@ -179,6 +228,9 @@ with rec {
             # Treat "west" area like XMonad's "main" area
             "${mod "return"}" = "yabai -m window --swap west";
 
+            # Force a re-jig of spaces
+            "${mod "r"}" = "${fixUpSpaces}";
+
             # Tile/float the focused window
             # TODO: Add queries so they only do one or the other
             "${       mod "t" }" = "yabai -m window --toggle float";
@@ -206,44 +258,6 @@ with rec {
               "||"
               "yabai -m window --resize left:60:0"
             ];
-          }
-
-          # Trigger a re-jig of our displays/spaces/etc. This would be useful to
-          # put in Yabai's startup config, but doesn't seem to work (maybe only
-          # "config" options work there?).
-          # TODO: Prefer destroying empty spaces, to reduce window shuffling
-          {
-            "${mod "r"}" = unwords ([
-              # Ensure we have 10 spaces in total
-              "while [[ $(yabai -m query --spaces | jq 'length') -gt 10 ]];"
-              "do"
-                # If there's only one space on this display, switch to another
-                "if [[ $(yabai -m query --spaces --display | jq 'length')"
-                       "-eq 1 ]];"
-                "then"
-                  "yabai -m display --focus next;"
-                  #"sleep 0.2;"
-                "fi;"
-                "yabai -m space --destroy;"
-              "done;"
-              "while [[ $(yabai -m query --spaces | jq 'length') -lt 10 ]];"
-              "do"
-                "yabai -m space --create;"
-                #"sleep 0.2"
-              "done;"
-            ] ++
-
-            # Spaces are indexed, but that order can change, e.g. when moving
-            # them between displays. We'll use labels instead, since they're
-            # more stable: the labels are "l" followed by a number (current
-            # index - 1). These labels should be used by our keybindings,
-            # rather than the indices.
-            map (n: with { s = toString (n - 1); };
-                    "yabai -m space ${toString n} --label l${s};")
-                (range 1 10) ++
-
-            # Dummy command, to prevent the previous ';' causing trouble
-            ["true"]);
           }
 
           /*
