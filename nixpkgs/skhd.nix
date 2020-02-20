@@ -307,17 +307,62 @@ with rec {
               yabai -m query --spaces |
                 jq 'map(select(.focused | . == 1)) | .[] | .display'
             '';
+
+            forceSpaceFocus = ''
+                # Move the desired space to the focused display
+                TRIES=0
+                while true
+                do
+                  if [[ "$TRIES" -gt 5 ]]
+                  then
+                    echo "Failed to move $1 to the focused display" 1>&2
+                    break
+                  fi
+
+                  D=$(${self.focusedDisplay})
+                  yabai -m query --spaces | jq -e "${unwords [
+                    "map(select(.label == \\\"$1\\\")) |"
+                    ".[] | .display == $D"
+                  ]}" > /dev/null && break
+
+                  yabai -m space $1 --display $D || true
+                  sleep 0.1
+                done
+
+                # Focus this space, if needed. This loop serves two purposes:
+                #  - Don't bother switching if we're already focused
+                #  - If it doesn't switch for some reason (I've experienced this
+                #    before) retry a few times before giving up
+                TRIES=0
+                while yabai -m query --spaces | jq -e "${unwords [
+                        "map(select(.label == \\\"$1\\\")) |"
+                        ".[] | .focused == 0"
+                      ]}" > /dev/null
+                do
+                  TRIES=$(( TRIES + 1 ))
+                  if [[ "$TRIES" -gt 5 ]]
+                  then
+                    echo "Giving up focusing $1!" 1>&2
+                    break
+                  fi
+                  if [[ "$TRIES" -gt 1 ]]
+                  then
+                    echo "Struggling to focus $1" 1>&2
+                    # Try switching to something else, see if that rejigs it?
+                    yabai -m space --focus next || yabai -m space --focus first
+                  fi
+
+                  yabai -m space --focus $1 || true
+                  sleep 0.1
+                done
+            '';
           });
           listToAttrs (map (n: with { s = toString n; }; {
                              name  = mod s;
                              value = unwords [
                                "${maybeFixSpaces};"
                                "${ensureDisplaysHaveSpaces};"
-                               # Move the desired space to the focused display,
-                               # then focus it
-                               "yabai -m space l${s} --display $(${
-                                 focusedDisplay});"
-                               "yabai -m space --focus l${s}"
+                               "${forceSpaceFocus} l${s}"
                              ];
                            })
                            spaces))
