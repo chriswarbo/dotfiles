@@ -1,4 +1,4 @@
-{ fetchFromGitHub, foldAttrs', lib, merge, prefixFlatten, skhd }:
+{ fetchFromGitHub, foldAttrs', lib, merge, prefixFlatten, skhd, wrap }:
 with builtins;
 with lib;
 with { unwords = concatStringsSep " "; };
