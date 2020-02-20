@@ -220,14 +220,14 @@ with rec {
                              name  = mod (toString n);
                              value = go n;
                            })
-                           (range 0 9)))
+                           spaces))
 
           # Send focused window to a particular space (by label)
           (listToAttrs (map (n: {
                               name  = shift (mod (toString n));
                               value = "yabai -m window --space l${toString n}";
                             })
-                            (range 0 9)))
+                            spaces))
 
           # Switch between displays, cycling around when we hit the end of list
           {
