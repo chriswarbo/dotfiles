@@ -266,51 +266,82 @@ with rec {
             '';
 
             forceSpaceFocus = ''
-                # Move the desired space to the focused display
                 TRIES=0
                 while true
                 do
-                  if [[ "$TRIES" -gt 5 ]]
-                  then
-                    echo "Failed to move $1 to the focused display" 1>&2
-                    break
-                  fi
-
-                  D=$(${self.focusedDisplay})
-                  yabai -m query --spaces | jq -e "${unwords [
-                    "map(select(.label == \\\"$1\\\")) |"
-                    ".[] | .display == $D"
-                  ]}" > /dev/null && break
-
-                  yabai -m space $1 --display $D || true
-                  sleep 0.1
-                done
-
-                # Focus this space, if needed. This loop serves two purposes:
-                #  - Don't bother switching if we're already focused
-                #  - If it doesn't switch for some reason (I've experienced this
-                #    before) retry a few times before giving up
-                TRIES=0
-                while yabai -m query --spaces | jq -e "${unwords [
-                        "map(select(.label == \\\"$1\\\")) |"
-                        ".[] | .focused == 0"
-                      ]}" > /dev/null
-                do
                   TRIES=$(( TRIES + 1 ))
-                  if [[ "$TRIES" -gt 5 ]]
+                  if [[ "$TRIES" -gt 10 ]]
                   then
-                    echo "Giving up focusing $1!" 1>&2
+                    echo "Failed to switch to $1" 1>&2
                     break
                   fi
-                  if [[ "$TRIES" -gt 1 ]]
+
+                  # Try rejigging the spaces if we've taken a few attempts
+                  if [[ "$TRIES" -gt 3 ]]
                   then
-                    echo "Struggling to focus $1" 1>&2
-                    # Try switching to something else, see if that rejigs it?
-                    yabai -m space --focus next || yabai -m space --focus first
+                    echo "Struggling to switch to $1... fixing up spaces" 1>&2
+                    ${self.maybeFixSpaces}
                   fi
 
-                  yabai -m space --focus $1 || true
-                  sleep 0.1
+                  if [[ "$TRIES" -gt 7 ]]
+                  then
+                    echo "Really struggling to switch to $1..." 1>&2
+                    ${fixUpSpaces}
+                  fi
+
+                  # Break if we're focused
+                  SPACES=$(yabai -m query --spaces)
+                  echo "$SPACES" | jq -e "${unwords [
+                    "map(select(.label == \\\"$1\\\")) |"
+                    ".[] | .focused == 0"
+                  ]}" > /dev/null || break
+
+                  # Move the desired space to the focused display
+                  D=$(${self.focusedDisplay})
+                  if echo "$SPACES" | jq -e "${unwords [
+                       "map(select(.label == \\\"$1\\\")) |"
+                       ".[] | .display != $D"
+                     ]}" > /dev/null
+                  then
+                    echo "Moving $1 to display $D"
+                    yabai -m space $1 --display $D || true
+                    sleep 0.1
+
+                    # Restart the loop, to retry this step until it works
+                    continue
+                  fi
+
+                  # Focus this space, if needed
+                  if echo "$SPACES" | jq -e "${unwords [
+                       "map(select(.label == \\\"$1\\\")) |"
+                       ".[] | .focused == 0"
+                     ]}" > /dev/null
+                  then
+                    # Try rejigging the space in various ways to see if
+                    # something works
+                    if [[ "$TRIES" -eq 4 ]]
+                    then
+                      yabai   -m display --focus next ||
+                        yabai -m display --focus first
+                      yabai   -m display --focus prev ||
+                        yabai -m display --focus last
+                    fi
+                    if [[ "$TRIES" -eq 6 ]]
+                    then
+                      yabai   -m space --focus next ||
+                        yabai -m space --focus first
+                      yabai   -m space --focus prev ||
+                        yabai -m space --focus last
+                    fi
+                    if [[ "$TRIES" -eq 8 ]]
+                    then
+                      yabai -m space $1 --display recent || true
+                      continue
+                    fi
+
+                    yabai -m space --focus $1 || true
+                    sleep 0.1
+                  fi
                 done
             '';
           });
