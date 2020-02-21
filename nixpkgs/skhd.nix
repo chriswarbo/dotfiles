@@ -44,13 +44,12 @@ with rec {
 
           # The main 'hotkey' for invoking Yabai actions. Note that this
           # function adds a '-' that skhd expects, so it should come at the end
-          # of any other modifiers (e.g. alt or shift)
+          # of any other modifiers (e.g. ctrl or shift)
           mod = k: "lalt - ${k}";
 
           # Extra modifiers. Note that these don't add the '-' that skhd expects
-          # at the end of the modifiers; either use them in conjunction with
-          # 'mod' e.g. 'shift (mod "j")' or put '-' explicitly e.g. 'alt "- j"'.
-          alt   = k: "alt   + ${k}";
+          # at the end of the modifiers; either use them in conjunction with mod
+          # e.g. 'shift (mod "j")' or put '-' explicitly e.g. 'shift "- j"'.
           shift = k: "shift + ${k}";
 
           # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
