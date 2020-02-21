@@ -30,63 +30,8 @@ with rec {
     };
   });
 
-  # TODO: Refactor
-  # TODO: Pick more ergonomic keys (remap Option to Super?)
   skhdConfig =
     with rec {
-      # The skhd config has the form "keys : commands". Since the commands
-      # govern the semantics it makes more sense for us to specify them the
-      # other way around.
-
-      possiblyUseful = {
-        # launchers
-        #"open -nb io.alacritty" = cmd + ctrl - return;
-        #"open -b org.gnu.Emacs" = cmd + ctrl - i;
-
-        # make floating window fill left-half of screen
-        # "yabai -m window --grid 1:2:0:0:1:1" = shift + alt - left
-
-        # make floating window fill right-half of screen
-        # "yabai -m window --grid 1:2:1:0:1:1" = shift + alt - right  :
-
-        # create desktop, move window and follow focus - uses jq for parsing json (brew install jq)
-        # shift + cmd - n : yabai -m space --create && \
-                          # index="$(yabai -m query --spaces --display | jq 'map(select(."native-fullscreen" == 0))[-1].index')" && \
-                          # yabai -m window --space "''${index}" && \
-                          # yabai -m space --focus "''${index}"
-
-        # create desktop and follow focus - uses jq for parsing json (brew install jq)
-        # cmd + alt - n : yabai -m space --create && \
-        #                 index="$(yabai -m query --spaces --display | jq 'map(select(."native-fullscreen" == 0))[-1].index')" && \
-        #                 yabai -m space --focus "''${index}"
-
-        # destroy desktop
-        # cmd + alt - w : yabai -m space --destroy
-
-        # focus monitor
-        # TODO: [Darwin](skhd/yabai) Directional monitor focus
-        #       yabai's API provides display position offsets.
-        #       yabai -m query --displays | jq
-        # ctrl + alt - x  : yabai -m display --focus recent
-        # ctrl + alt - z  : yabai -m display --focus prev
-        # ctrl + alt - c  : yabai -m display --focus next
-        # ctrl + alt - 1  : yabai -m display --focus 1
-        # ctrl + alt - 2  : yabai -m display --focus 2
-        # ctrl + alt - 3  : yabai -m display --focus 3
-
-        # send window to monitor and follow focus
-        # ctrl + cmd - x  : yabai -m window --display recent; yabai -m display --focus recent
-        # ctrl + cmd - z  : yabai -m window --display prev; yabai -m display --focus prev
-        # ctrl + cmd - c  : yabai -m window --display next; yabai -m display --focus next
-        # ctrl + cmd - 1  : yabai -m window --display 1; yabai -m display --focus 1
-        # ctrl + cmd - 2  : yabai -m window --display 2; yabai -m display --focus 2
-        # ctrl + cmd - 3  : yabai -m window --display 3; yabai -m display --focus 3
-
-        # # change layout of desktop
-        # ctrl + alt - a : yabai -m space --layout bsp
-        # ctrl + alt - d : yabai -m space --layout float
-      };
-
       # Most of our shortcuts are for yabai, since it's designed to be used
       # in conjunction with a hotkey daemon like skhd.
       yabaiCfg =
