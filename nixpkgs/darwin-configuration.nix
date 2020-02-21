@@ -1,8 +1,5 @@
 { config, pkgs, ... }:
 
-# TODO: Get Firefox from
-#https://github.com/cmacrae/config.git
-
 with builtins;
 with {
   # Grab useful configs from other people
@@ -177,6 +174,19 @@ with {
 
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
+
+        (installApplication rec {
+          name       = "Firefox";
+          version    = "73.0.1";
+          sourceRoot = "Firefox.app";
+          src        = fetchurl {
+            name   = "firefox-${version}.dmg";
+            url    = "https://ftp.mozilla.org/pub/firefox/releases/${version}/mac-EME-free/en-GB/Firefox%20${version}.dmg";
+            sha256 = "09lz8y1jx6f67rcy6ixzn93kra8hq94jh0p9w0m4fxyl32navb3i";
+          };
+          description = "Firefox browser";
+          homepage    = https://www.getfirefox.com;
+        })
 
         (installApplication rec {
           name       = "Postman";
