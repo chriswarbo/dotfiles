@@ -13,3 +13,6 @@ compinit
 
 # See https://direnv.net/docs/hook.html
 eval "$(direnv hook zsh)"
+
+# Emacs shells don't need a separate pager like less
+[[ -n "$INSIDE_EMACS" ]] && export PAGER=cat

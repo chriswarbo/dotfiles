@@ -170,7 +170,6 @@ with {
 
         artemisWrapper
         docker  # FIXME: Do we actually need this command in the global env?
-        #firefox  # FIXME: Broken on macOS
 
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
@@ -360,8 +359,9 @@ with {
       (self: super: builtins.getAttr "overrides"
         (import <nix-config/overrides/metaPackages.nix> self super))
 
-      # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
+      # Our own overrides go here
       (self: super: {
+        # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = super.emacs.overrideAttrs (old: {
           patches = (old.patches or []) ++ [
             (super.fetchurl {
@@ -374,6 +374,10 @@ with {
             })
           ];
         });
+
+        # Avoid building Haskell stuff we don't need
+        haskellCli = self.dummyBuild "empty-haskell-cli";
+        #nix-diff   = self.dummyBuild "empty-nix-diff";  # FIXME: Would be nice
       })
     ];
   };
