@@ -375,9 +375,8 @@ with {
           ];
         });
 
-        # Avoid building Haskell stuff we don't need
-        haskellCli = self.dummyBuild "empty-haskell-cli";
-        #nix-diff   = self.dummyBuild "empty-nix-diff";  # FIXME: Would be nice
+        # Broken in nixpkgs, but we don't care at the moment
+        stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
       })
     ];
   };
