@@ -102,6 +102,22 @@ with {
         }
       '';
 
+      hosts.text = ''
+        ##
+        # Host Database
+        #
+        # localhost is used to configure the loopback interface
+        # when the system is booting.  Do not change this entry.
+        ##
+        127.0.0.1	localhost
+        255.255.255.255	broadcasthost
+        ::1             localhost
+
+        # The above was copy/pasted from the (default?) macOS /etc/hosts
+        # The below is our own stuff
+        192.168.86.32 phone
+      '';
+
       "ssh/ssh_config".text = ''
         # We want access to warbo@github.com and chriswarbo@github.com, but
         # GitHub don't let us specify the username: it's always git@github.com,
