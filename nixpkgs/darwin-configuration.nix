@@ -190,6 +190,10 @@ with {
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
 
+        (callPackage ./shortcut-commands.nix {})  # Scripts to bind to hotkeys
+
+        # GUI macOS applications
+
         (installApplication rec {
           name       = "Firefox";
           version    = "73.0.1";
@@ -452,17 +456,17 @@ with {
 
     # Provides keyboard shortcuts (AKA hotkeys)
     # TODO: Turn into a module and add to imports instead
-    skhd = import ./skhd.nix {
-      inherit (pkgs)
-        fetchFromGitHub
-        foldAttrs'
-        lib
-        merge
-        prefixFlatten
-        skhd
-        wrap
-        ;
-    };
+    #skhd = import ./skhd.nix {
+    #  inherit (pkgs)
+    #    fetchFromGitHub
+    #    foldAttrs'
+    #    lib
+    #    merge
+    #    prefixFlatten
+    #    skhd
+    #    wrap
+    #    ;
+    #};
 
     # Tiling window manager
     # TODO: Turn yabai.nix into a module and add to imports instead
