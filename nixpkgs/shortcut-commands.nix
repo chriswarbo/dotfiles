@@ -195,6 +195,11 @@ attrsToDirs' "shortcut-commands" {
           jq "map(select(.label == \"$1\")) | .[] | .index"
       }
 
+      function displayOf {
+        yabai -m query --spaces |
+          jq "map(select(.label == \"$1\")) | .[] | .display"
+      }
+
       function spacesInOrder {
         info "Checking if spaces are in order"
         SPACES=$(yabai -m query --spaces)
@@ -231,7 +236,13 @@ attrsToDirs' "shortcut-commands" {
           else
             D=2
           fi
-          yabai -m space "l$M" --display "$D" || true
+          DM=$(displayOf "l$M")
+          info "Ensuring space $M is on display $D; it's on $DM"
+          if [[ "$DM" -ne "$D" ]]
+          then
+            info "Moving space $M from display $DM to display $D"
+            yabai -m space "l$M" --display "$D"
+          fi
         done
       fi
 
