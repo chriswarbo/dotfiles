@@ -136,10 +136,8 @@ attrsToDirs' "shortcut-commands" {
                        # Skip this label if a space already has it
                        info "Checking if a space is already labelled l${s}"
                        if echo "$SPACES" |
-                          jq -e '${unwords [
-                                  "map(select(.label == \"l${s}\")) |"
-                                  "length | . == 0"
-                                ]}' > /dev/null
+                          jq -e 'map(select(.label == "l${s}")) | ${""
+                                 } length | . == 0' > /dev/null
                        then
                          info "Labelling space l${s}"
                          # Find a space with a dodgy or duplicate label.
