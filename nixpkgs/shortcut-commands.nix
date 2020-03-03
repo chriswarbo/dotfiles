@@ -71,15 +71,8 @@ attrsToDirs' "shortcut-commands" {
       exit "$CODE"
     '';
 
-    # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
-    #  - We want a fixed number of spaces (destroy/create to enforce this)
-    #  - "Switch to space N" should bring that space to the focused
-    #    display, rather than changing which display is focused.
-    #
-    # This would be nice to put in Yabai's startup config, but doesn't
-    # seem to work (maybe only "config" options work there?).
-    # TODO: Prefer destroying empty spaces, to reduce window shuffling
-    shortcut-fix-up-spaces = ''
+    # Destroy spaces if we have too many, create if we don't have enough
+    shortcut-populate-spaces = ''
       # Ensure we have ${count} spaces in total
       SPACES=$(yabai -m query --spaces)
       D=$(echo "$SPACES" |
@@ -113,7 +106,23 @@ attrsToDirs' "shortcut-commands" {
         done
         SPACES=$(yabai -m query --spaces)
       fi
+    '';
 
+    shortcut-fix-up-spaces = ''
+      # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
+      #  - We want a fixed number of spaces (destroy/create to enforce this)
+      #  - "Switch to space N" should bring that space to the focused
+      #    display, rather than changing which display is focused.
+      #
+      # This would be nice to put in Yabai's startup config, but doesn't
+      # seem to work (maybe only "config" options work there?).
+      # TODO: Prefer destroying empty spaces, to reduce window shuffling
+
+      shortcut-populate-spaces
+      shortcut-label-spaces
+    '';
+
+    shortcut-label-spaces = ''
       # Spaces are indexed, but that order can change, e.g. when moving
       # them between displays. We'll use labels instead, since they're
       # more stable: the labels are "l" followed by the current index.
