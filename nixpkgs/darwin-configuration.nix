@@ -497,11 +497,6 @@ with {
       #trackpad.Clicking = true;
     };
 
-    keyboard = {
-      enableKeyMapping       = true;
-      remapCapsLockToControl = true;
-    };
-
     # Used for backwards compatibility, read the changelog before changing.
     # $ darwin-rebuild changelog
     stateVersion = 4;
