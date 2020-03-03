@@ -208,6 +208,9 @@ attrsToDirs' "shortcut-commands" {
         return 0
       }
 
+      info "Ensuring spaces are labelled first"
+      shortcut-fix-up-spaces
+
       # Evenly distribute spaces across displays (easier to have a fixed
       # target than enforce constraints on some arbitrary arrangement)
       # TODO: Hardcoded to 2 displays at the moment.
