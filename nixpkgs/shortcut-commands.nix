@@ -148,8 +148,14 @@ attrsToDirs' "shortcut-commands" {
                          # no label, or a dodgy label, or a duplicate
                          # label, which shortcut-find-unlabelled will
                          # give us
-                         UL=$(shortcut-find-unlabelled | head -n1)
-                         yabai -m space "$UL" --label l${s} || true
+                         if UL=$(shortcut-find-unlabelled)
+                         then
+                           info "Found unlabelled spaces for l${s}: $UL"
+                           yabai -m space "$(echo "$UL" | head -n1)" \
+                                 --label l${s} || true
+                         else
+                           echo "label-spaces: No unlabelled spaces!" 1>&2
+                         fi
                          SPACES=$(yabai -m query --spaces)
                        else
                          info "Space l${s} already exists, nothing to do"
