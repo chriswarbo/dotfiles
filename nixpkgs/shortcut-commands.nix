@@ -128,15 +128,20 @@ attrsToDirs' "shortcut-commands" {
       # more stable: the labels are "l" followed by the current index.
       # These labels should be used by our keybindings, rather than the
       # indices.
+      function info {
+        [[ -z "$DEBUG" ]] || echo "label-spaces: $@" 1>&2
+      }
+
       ${unlines (map (n: with { s = toString n; }; ''
                        # Skip this label if a space already has it
+                       info "Checking if a space is already labelled l${s}"
                        if echo "$SPACES" |
                           jq -e '${unwords [
                                   "map(select(.label == \"l${s}\")) |"
                                   "length | . == 0"
                                 ]}' > /dev/null
                        then
-                         echo "Labelling space l${s}" 1>&2
+                         info "Labelling space l${s}"
                          # Find a space with a dodgy or duplicate label.
                          # If we're here then it must be the case that:
                          #  - We've got the right number of spaces
@@ -148,6 +153,8 @@ attrsToDirs' "shortcut-commands" {
                          UL=$(shortcut-find-unlabelled | head -n1)
                          yabai -m space "$UL" --label l${s} || true
                          SPACES=$(yabai -m query --spaces)
+                       else
+                         info "Space l${s} already exists, nothing to do"
                        fi
                      '')
                      spaces)}
@@ -179,17 +186,25 @@ attrsToDirs' "shortcut-commands" {
       # that of macOS, at least on my setup. This assumption might be
       # wrong!
 
+      function info {
+        [[ -z "$DEBUG" ]] || echo "arrange-spaces: $@" 1>&2
+      }
+
       function indexOf {
         yabai -m query --spaces |
           jq "map(select(.label == \"$1\")) | .[] | .index"
       }
 
       function spacesInOrder {
+        info "Checking if spaces are in order"
         SPACES=$(yabai -m query --spaces)
         for N in ${unwords (map toString spaces)}
         do
+          info "Checking space $N"
           [[ $(indexOf "l$N") -eq "$N" ]] || return 1
+          info "Space $N is in the correct place"
         done
+        info "All spaces are in the correct place"
         return 0
       }
 
@@ -197,13 +212,14 @@ attrsToDirs' "shortcut-commands" {
       # target than enforce constraints on some arbitrary arrangement)
       # TODO: Hardcoded to 2 displays at the moment.
       DCOUNT=$(yabai -m query --displays | jq 'length')
+      info "Found $DCOUNT displays"
       [[ "$DCOUNT" -lt 3 ]] || {
         echo "Found $DCOUNT displays; we can only handle 1 or 2" 1>&2
         exit 1
       }
       if [[ "$DCOUNT" -gt 1 ]]
       then
-        # External display is plugged in; we assume it's index 2
+        info "External display is plugged in; we assume it's index 2"
         for M in ${unwords (map toString spaces)}
         do
           if [[ "$M" -lt $(( ${count} / 2 )) ]]
