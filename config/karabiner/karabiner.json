@@ -1,0 +1,186 @@
+{
+  "global": {
+    "check_for_updates_on_startup": true,
+    "show_in_menu_bar": true,
+    "show_profile_name_in_menu_bar": false
+  },
+  "profiles": [
+    {
+      "complex_modifications": {
+        "devices": [],
+        "fn_function_keys": [],
+        "name": "Default profile",
+        "parameters": {
+          "basic.simultaneous_threshold_milliseconds": 50,
+          "basic.to_delayed_action_delay_milliseconds": 500,
+          "basic.to_if_alone_timeout_milliseconds": 1000,
+          "basic.to_if_held_down_threshold_milliseconds": 500,
+          "delay_milliseconds_before_open_device": 1000,
+          "mouse_motion_to_scroll.speed": 100
+        },
+        "rules": [
+          {
+            "description": "CapsLock as Control",
+            "manipulators": [
+              {
+                "type": "basic",
+                "description": "Set a variable then hold down Control",
+                "from": {
+                  "key_code": "caps_lock",
+                  "modifiers": {"optional": ["any"]}
+                },
+                "to": [
+                  {
+                    "set_variable": {
+                      "name": "caps_lock_held_down",
+                      "value": 1
+                    }
+                  },
+                  {"key_code": "left_control"}
+                ],
+                "to_after_key_up": [
+                  {
+                    "set_variable": {
+                      "name": "caps_lock_held_down",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "description": "Space as Ctrl (unless CapsLock is held)",
+            "manipulators": [
+              {
+                "conditions": [
+                  {
+                    "name": "caps_lock_held_down",
+                    "type": "variable_if",
+                    "value": 0
+                  }
+                ],
+                "description": "Make spacebar act as Control when held",
+                "from": {
+                  "key_code": "spacebar",
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "left_control"
+                  }
+                ],
+                "to_if_alone": [
+                  {
+                    "key_code": "spacebar"
+                  }
+                ],
+                "type": "basic"
+              }
+            ]
+          },
+          {
+            "description": "Use § for esc on touchbar keyboard; use fn+§ for §",
+            "manipulators": [
+              {
+                "conditions": [
+                  {
+                    "identifiers": [
+                      {
+                        "is_keyboard": true,
+                        "vendor_id": 1452
+                      }
+                    ],
+                    "type": "device_if"
+                  }
+                ],
+                "from": {
+                  "key_code": "non_us_backslash",
+                  "modifiers": {
+                    "optional": [
+                      "caps_lock"
+                    ]
+                  }
+                },
+                "to": [{"key_code": "escape"}],
+                "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "identifiers": [
+                      {
+                        "is_keyboard": true,
+                        "vendor_id": 1452
+                      }
+                    ],
+                    "type": "device_if"
+                  }
+                ],
+                "from": {
+                  "key_code": "non_us_backslash",
+                  "modifiers": {"mandatory": ["fn"]}
+                },
+                "to": [{"key_code": "non_us_backslash"}],
+                "type": "basic"
+              }
+            ]
+          },
+          {
+            "description": "Switch around left modifiers",
+            "manipulators": [
+              {
+                "from": {
+                  "key_code": "left_command",
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "left_option"
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "from": {
+                  "key_code": "left_control",
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "left_command"
+                  }
+                ],
+                "type": "basic"
+              }
+            ]
+          }
+        ],
+        "selected": true,
+        "simple_modifications": [],
+        "virtual_hid_keyboard": {
+          "country_code": 0,
+          "mouse_key_xy_scale": 100
+        }
+      },
+      "selected": false,
+      "simple_modifications": [],
+      "virtual_hid_keyboard": {
+        "country_code": 0,
+        "mouse_key_xy_scale": 100
+      }
+    }
+  ]
+}
