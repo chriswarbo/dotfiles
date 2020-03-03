@@ -295,16 +295,8 @@ attrsToDirs' "shortcut-commands" {
     '';
 
     # General commands
-    # mod-space
-    #"yabai -m window --toggle split";
     #"${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
-    #"${shift (mod "c")   }" = "yabai -m window --close";
 
-    # Treat "west" area like XMonad's "main" area
-    #"${mod "return"}" = "yabai -m window --swap west";
-
-    # Hotkeys to force re-jigging broken things
-    #"${mod "e"}" = "shortcut-fix-up-emacs";
     # mod-r
     shortcut-force-rejig = ''
       shortcut-arrange-spaces
