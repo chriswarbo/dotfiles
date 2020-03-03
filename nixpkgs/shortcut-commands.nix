@@ -135,6 +135,7 @@ attrsToDirs' "shortcut-commands" {
       ${unlines (map (n: with { s = toString n; }; ''
                        # Skip this label if a space already has it
                        info "Checking if a space is already labelled l${s}"
+                       SPACES=$(yabai -m query --spaces)
                        if echo "$SPACES" |
                           jq -e 'map(select(.label == "l${s}")) | ${""
                                  } length | . == 0' > /dev/null
