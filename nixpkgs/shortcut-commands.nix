@@ -378,7 +378,11 @@ attrsToDirs' "shortcut-commands" {
     shortcut-ensure-displays-have-spaces = ''
       # Loop through display indices which have fewer than 2 spaces
       while true
+      do
         DS=$(yabai -m query --displays)
+        echo "$DS" |
+          jq -e 'map(select(.spaces | length | . < 2)) | . == []' > /dev/null &&
+          break
         echo "$DS" |
           jq 'map(select(.spaces | length | . < 2)) | .[] | .index' |
           while read -r D
