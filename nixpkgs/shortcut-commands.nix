@@ -160,10 +160,11 @@ attrsToDirs' "shortcut-commands" {
                      spaces)}
     '';
 
-    # Force all Emacs windows to be "zoomed", i.e. take up their whole
-    # space. Since Emacs doesn't tile nicely, this at least resizes it
-    # to fit its current display.
     shortcut-fix-up-emacs = ''
+      # Force all Emacs windows to be "zoomed", i.e. take up their whole
+      # space. Since Emacs doesn't tile nicely, this at least resizes it
+      # to fit its current display.
+
       osascript -e 'tell application "Emacs"
                       repeat with x from 1 to (count windows)
                         tell window x
@@ -173,10 +174,11 @@ attrsToDirs' "shortcut-commands" {
                     end tell'
     '';
 
-    # To minimise disruption if/when Yabai dies, we can use this script to
-    # arrange spaces in order of their labels. This way, relabelling them
-    # should result in no changes, and hence no need to move windows.
     shortcut-arrange-spaces = ''
+      # To minimise disruption if/when Yabai dies, we can use this script to
+      # arrange spaces in order of their labels. This way, relabelling them
+      # should result in no changes, and hence no need to move windows.
+
       # macOS numbers spaces on one display then another, and so on.
       # This means that, for example, l1 will be out of order if it's on
       # display 2; since whatever space(s) is on display 1 will come
