@@ -182,7 +182,8 @@ with {
         };
       };
       [
-        devCli
+        # binutils and gcc both provide bin/ld
+        (devCli.overrideAttrs (old: { ignoreCollisions = true; }))
         devGui
         docCli
         docGui
