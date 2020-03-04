@@ -118,8 +118,8 @@ with {
         192.168.86.32 phone
       '';
 
-      "karabiner.json".text = toJSON (import ./karabiner.nix {
-        inherit (pkgs) lib;
+      "karabiner/karabiner.json".text = toJSON (import ./karabiner.nix {
+        inherit (pkgs) lib shortcuts;
       });
 
       "ssh/ssh_config".text = ''
@@ -194,7 +194,7 @@ with {
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
 
-        (callPackage ./shortcut-commands.nix {})  # Scripts to bind to hotkeys
+        shortcuts.package  # Commands used by our keyboard shortcuts
 
         # GUI macOS applications
 
@@ -399,6 +399,9 @@ with {
           ];
         });
 
+        # Scripts to bind to hotkeys
+        shortcuts = self.callPackage ./shortcuts.nix {};
+
         # Broken in nixpkgs, but we don't care at the moment
         stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
       })
@@ -485,21 +488,19 @@ with {
 
   system = {
     activationScripts.extraUserActivation.text = ''
-      if [[ -e "$HOME"/.config/karabiner ]]
+      D="$HOME"/.config/karabiner
+      if [[ -e "$D" ]]
       then
-        F="$HOME"/.config/karabiner/karabiner.json
-        if [[ -e "$F" ]] && ! [[ -h "$F" ]]
+        DEST=$(readlink -f "$D")
+        if ! [[ "x$D" = "x/etc/static/karabiner" ]]
         then
           N=1
-          while [[ -e "$F.backup$N" ]]; do N=$(( N + 1 )); done
-          mv -v "$F" "$F.backup$N"
-        fi
-        if ! [[ -h "$F" ]]
-        then
-          ln -s /etc/karabiner.json "$F"
+          while [[ -e "$D.backup$N" ]]; do N=$(( N + 1 )); done
+          mv -v "$D" "$D.backup$N"
+          ln -sv /etc/static/karabiner "$D"
         fi
       else
-        echo "WARNING: Couldn't find $HOME/.config/karabiner" 1>&2
+        ln -sv /etc/static/karabiner "$D"
       fi
     '';
 
