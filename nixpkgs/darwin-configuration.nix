@@ -118,6 +118,10 @@ with {
         192.168.86.32 phone
       '';
 
+      "karabiner.json".text = toJSON (import ./karabiner.nix {
+        inherit (pkgs) lib;
+      });
+
       "ssh/ssh_config".text = ''
         # We want access to warbo@github.com and chriswarbo@github.com, but
         # GitHub don't let us specify the username: it's always git@github.com,
@@ -480,6 +484,25 @@ with {
   };
 
   system = {
+    activationScripts.extraUserActivation.text = ''
+      if [[ -e "$HOME"/.config/karabiner ]]
+      then
+        F="$HOME"/.config/karabiner/karabiner.json
+        if [[ -e "$F" ]] && ! [[ -h "$F" ]]
+        then
+          N=1
+          while [[ -e "$F.backup$N" ]]; do N=$(( N + 1 )); done
+          mv -v "$F" "$F.backup$N"
+        fi
+        if ! [[ -h "$F" ]]
+        then
+          ln -s /etc/karabiner.json "$F"
+        fi
+      else
+        echo "WARNING: Couldn't find $HOME/.config/karabiner" 1>&2
+      fi
+    '';
+
     defaults = {
       #NSGlobalDomain = {
       #  AppleKeyboardUIMode = 3;
