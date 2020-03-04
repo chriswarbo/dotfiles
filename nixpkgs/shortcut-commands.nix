@@ -13,17 +13,18 @@ with rec {
 
   unlines = concatStringsSep "\n";
   unwords = concatStringsSep " ";
-};
-attrsToDirs' "shortcut-commands" {
-  bin = mapAttrs (name: script: wrap {
-                   inherit name;
-                   script = ''
-                     #!/usr/bin/env bash
-                     set -e
-                     ${script}
-                   '';
-                 }) {
-    shortcut-find-unlabelled = ''
+
+  makeScript = name: script: wrap {
+    inherit name;
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+      ${script}
+    '';
+  };
+
+  makeCommands = self: mapAttrs makeScript {
+    find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
 
@@ -72,7 +73,7 @@ attrsToDirs' "shortcut-commands" {
     '';
 
     # Destroy spaces if we have too many, create if we don't have enough
-    shortcut-populate-spaces = ''
+    populate-spaces = ''
       # Ensure we have ${count} spaces in total
       SPACES=$(yabai -m query --spaces)
       D=$(echo "$SPACES" |
@@ -108,7 +109,7 @@ attrsToDirs' "shortcut-commands" {
       fi
     '';
 
-    shortcut-fix-up-spaces = ''
+    fix-up-spaces = ''
       # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
       #  - We want a fixed number of spaces (destroy/create to enforce this)
       #  - "Switch to space N" should bring that space to the focused
@@ -118,11 +119,11 @@ attrsToDirs' "shortcut-commands" {
       # seem to work (maybe only "config" options work there?).
       # TODO: Prefer destroying empty spaces, to reduce window shuffling
 
-      shortcut-populate-spaces
-      shortcut-label-spaces
+      ${self.populate-spaces}
+      ${self.label-spaces}
     '';
 
-    shortcut-label-spaces = ''
+    label-spaces = ''
       # Spaces are indexed, but that order can change, e.g. when moving
       # them between displays. We'll use labels instead, since they're
       # more stable: the labels are "l" followed by the current index.
@@ -147,9 +148,9 @@ attrsToDirs' "shortcut-commands" {
                          #  - There isn't a space with this label
                          # This implies that there must be a space with
                          # no label, or a dodgy label, or a duplicate
-                         # label, which shortcut-find-unlabelled will
+                         # label, which self.find-unlabelled will
                          # give us
-                         if UL=$(shortcut-find-unlabelled)
+                         if UL=$(${self.find-unlabelled})
                          then
                            info "Found unlabelled spaces for l${s}: $UL"
                            yabai -m space "$(echo "$UL" | head -n1)" \
@@ -165,7 +166,7 @@ attrsToDirs' "shortcut-commands" {
                      spaces)}
     '';
 
-    shortcut-fix-up-emacs = ''
+    fix-up-emacs = ''
       # Force all Emacs windows to be "zoomed", i.e. take up their whole
       # space. Since Emacs doesn't tile nicely, this at least resizes it
       # to fit its current display.
@@ -179,7 +180,7 @@ attrsToDirs' "shortcut-commands" {
                     end tell'
     '';
 
-    shortcut-arrange-spaces = ''
+    arrange-spaces = ''
       # To minimise disruption if/when Yabai dies, we can use this script to
       # arrange spaces in order of their labels. This way, relabelling them
       # should result in no changes, and hence no need to move windows.
@@ -221,7 +222,7 @@ attrsToDirs' "shortcut-commands" {
       }
 
       info "Ensuring spaces are labelled first"
-      shortcut-fix-up-spaces
+      ${self.fix-up-spaces}
 
       # Evenly distribute spaces across displays (easier to have a fixed
       # target than enforce constraints on some arbitrary arrangement)
@@ -279,25 +280,25 @@ attrsToDirs' "shortcut-commands" {
     '';
 
     # mod-j
-    shortcut-next-window = ''
+    next-window = ''
       yabai -m window --focus next ||
       yabai -m window --focus first
     '';
 
     # mod-k
-    shortcut-prev-window = ''
+    prev-window = ''
       yabai -m window --focus prev ||
       yabai -m window --focus last
     '';
 
     # shift-mod-j
-    shortcut-move-next = ''
+    move-next = ''
       yabai -m window --swap  next ||
       yabai -m window --swap  first
     '';
 
     # shift-mod-k
-    shortcut-move-prev = ''
+    move-prev = ''
       yabai -m window --swap  prev ||
       yabai -m window --swap  last
     '';
@@ -305,12 +306,12 @@ attrsToDirs' "shortcut-commands" {
     # Switch between displays, cycling around when we hit the end of list
 
     # mod-left
-    shortcut-display-prev = ''
+    display-prev = ''
       yabai -m display --focus prev ||
       yabai -m display --focus last
     '';
     # mod-right
-    shortcut-display-next = ''
+    display-next = ''
       yabai -m display --focus next ||
       yabai -m display --focus first
     '';
@@ -319,11 +320,11 @@ attrsToDirs' "shortcut-commands" {
     #"${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
 
     # mod-r
-    shortcut-force-rejig = ''
-      shortcut-arrange-spaces
+    force-rejig = ''
+      ${self.arrange-spaces}
       pkill yabai || true
       sleep 2
-      shortcut-fix-up-spaces
+      ${self.fix-up-spaces}
       pkill skhd || true
     '';
 
@@ -339,7 +340,7 @@ attrsToDirs' "shortcut-commands" {
 
     # Horizontal requires offset calculations
     # mod-h
-    shortcut-resize-left = ''
+    resize-left = ''
       X=$(yabai -m query --windows --window | jq .frame.x)
       if [[ "$X" -lt 20 ]]
       then
@@ -349,7 +350,7 @@ attrsToDirs' "shortcut-commands" {
       fi
     '';
     # mod-l
-    shortcut-resize-right = ''
+    resize-right = ''
       X=$(yabai -m query --windows --window | jq .frame.x)
       if [[ "$X" -lt 20 ]]
       then
@@ -360,35 +361,35 @@ attrsToDirs' "shortcut-commands" {
     '';
 
     # If our spaces aren't labelled, something is up
-    shortcut-maybe-fix-spaces = ''
+    maybe-fix-spaces = ''
       if yabai -m query --spaces | jq -e 'map(.label) | sort | . != ${
         toJSON (map (n: "l${toString n}") spaces)
       }' > /dev/null
       then
         echo "Fixing up spaces first" 1>&2
-        shortcut-fix-up-spaces
+        ${self.fix-up-spaces}
       fi
       true
     '';
 
     # Picks a display with more than 2 spaces (guaranteed since we have
     # fewer than 5 displays!)
-    shortcut-pick-greedy-display = ''
+    pick-greedy-display = ''
       yabai -m query --displays |
         jq 'map(select(.spaces | length | . > 2)) | .[] | .index' |
         head -n1
     '';
 
     # Find a non-visible space from a display with many spaces
-    shortcut-pick-invisible-space = ''
-      D=$(shortcut-pick-greedy-display)
+    pick-invisible-space = ''
+      D=$(${self.pick-greedy-display})
       yabai -m query --spaces --display "$D" |
         jq 'map(select(.visible | . == 0)) | .[] | .index' |
         head -n1
     '';
 
     # Make sure each display has at least two spaces, so we can move one
-    shortcut-ensure-displays-have-spaces = ''
+    ensure-displays-have-spaces = ''
       # Loop through display indices which have fewer than 2 spaces
       while true
       do
@@ -401,7 +402,7 @@ attrsToDirs' "shortcut-commands" {
           while read -r D
           do
             echo "Display $D is low on spaces, moving one over" 1>&2
-            S=$(shortcut-pick-invisible-space)
+            S=$(${pick-invisible-space})
             yabai -m space "$S" --display "$D" || true
             sleep 0.2
           done
@@ -409,12 +410,12 @@ attrsToDirs' "shortcut-commands" {
     '';
 
     # Get the focused display (the display of the focused space)
-    shortcut-focused-display = ''
+    focused-display = ''
       yabai -m query --spaces |
         jq 'map(select(.focused | . == 1)) | .[] | .display'
     '';
 
-    shortcut-force-space-focus = ''
+    force-space-focus = ''
         for RETRY in $(seq 1 10)
         do
           SPACES=$(yabai -m query --spaces)
@@ -426,7 +427,7 @@ attrsToDirs' "shortcut-commands" {
           ]}" > /dev/null || break
 
           # Move the desired space to the focused display
-          D=$(shortcut-focused-display)
+          D=$(${focused-display})
           if echo "$SPACES" | jq -e "${unwords [
                "map(select(.label == \\\"$1\\\")) |"
                ".[] | .display != $D"
@@ -445,36 +446,28 @@ attrsToDirs' "shortcut-commands" {
           sleep 0.1
         done
     '';
-  } //
+  } //  # End of mapAttrs
+  {
+    # These attrs will appear as-is in the output
 
-  # Switch to the labelled display
-  listToAttrs (map (n: with { s = toString n; }; rec {
-                     name  = "shortcut-switch-to-${s}";
-                     value = wrap {
-                       inherit name;
-                       script = ''
-                         #!/usr/bin/env bash
-                         set -e
-                         shortcut-maybe-fix-spaces
-                         shortcut-ensure-displays-have-spaces
-                         shortcut-force-space-focus l${s}
-                       '';
-                     };
-                   })
-                   spaces) //
+    # Switch to the labelled display
+    switch-to = n: with { s = toString n; }; makeScript
+      "switch-to-${s}"
+      ''
+        ${self.maybe-fix-spaces}
+        ${self.ensure-displays-have-spaces}
+        ${self.force-space-focus} l${s}
+      '';
 
-          # Send focused window to a particular space (by label)
-  listToAttrs (map (n: rec {
-                     name  = "shortcut-move-to-${toString n}";
-                     value = wrap {
-                       inherit name;
-                       script = ''
-                         #!/usr/bin/env bash
-                         set -e
-                         yabai -m window --space l${toString n}
-                       '';
-                     };
-                   })
-                   spaces)
-  ;
-}
+    # Send focused window to a particular space (by label)
+    send-to = n: with { s = toString n; }; makeScript
+      "send-to-${s}"
+      ''
+        yabai -m window --space l${toString n}
+      '';
+  };
+
+  # Tie the knot, so 'self' works
+  commands = makeCommands commands;
+};
+commands
