@@ -24,6 +24,9 @@ with rec {
   };
 
   makeCommands = self: mapAttrs makeScript {
+    # Common queries
+    display-count = "yabai -m query --displays | jq 'length'";
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
@@ -279,43 +282,6 @@ with rec {
       done
     '';
 
-    # mod-j
-    next-window = ''
-      yabai -m window --focus next ||
-      yabai -m window --focus first
-    '';
-
-    # mod-k
-    prev-window = ''
-      yabai -m window --focus prev ||
-      yabai -m window --focus last
-    '';
-
-    # shift-mod-j
-    move-next = ''
-      yabai -m window --swap  next ||
-      yabai -m window --swap  first
-    '';
-
-    # shift-mod-k
-    move-prev = ''
-      yabai -m window --swap  prev ||
-      yabai -m window --swap  last
-    '';
-
-    # Switch between displays, cycling around when we hit the end of list
-
-    # mod-left
-    display-prev = ''
-      yabai -m display --focus prev ||
-      yabai -m display --focus last
-    '';
-    # mod-right
-    display-next = ''
-      yabai -m display --focus next ||
-      yabai -m display --focus first
-    '';
-
     # General commands
     #"${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
 
@@ -402,7 +368,7 @@ with rec {
           while read -r D
           do
             echo "Display $D is low on spaces, moving one over" 1>&2
-            S=$(${pick-invisible-space})
+            S=$(${self.pick-invisible-space})
             yabai -m space "$S" --display "$D" || true
             sleep 0.2
           done
@@ -427,7 +393,7 @@ with rec {
           ]}" > /dev/null || break
 
           # Move the desired space to the focused display
-          D=$(${focused-display})
+          D=$(${self.focused-display})
           if echo "$SPACES" | jq -e "${unwords [
                "map(select(.label == \\\"$1\\\")) |"
                ".[] | .display != $D"
@@ -446,28 +412,45 @@ with rec {
           sleep 0.1
         done
     '';
-  } //  # End of mapAttrs
-  {
-    # These attrs will appear as-is in the output
 
-    # Switch to the labelled display
-    switch-to = n: with { s = toString n; }; makeScript
-      "switch-to-${s}"
-      ''
-        ${self.maybe-fix-spaces}
-        ${self.ensure-displays-have-spaces}
-        ${self.force-space-focus} l${s}
-      '';
+    # Switch to the space with the given label. Make sure it exists first, and
+    # bring it to the current display if it isn't already.
+    switch-to = ''
+      ${self.maybe-fix-spaces}
+      ${self.ensure-displays-have-spaces}
+      ${self.force-space-focus} "$1"
+    '';
 
-    # Send focused window to a particular space (by label)
-    send-to = n: with { s = toString n; }; makeScript
-      "send-to-${s}"
-      ''
-        yabai -m window --space l${toString n}
-      '';
+    close-window = ''yabai -m window  --close       '';
+    make-main    = ''yabai -m window  --swap   west '';
+    toggle-split = ''yabai -m window  --toggle split'';
+    next-window  = ''yabai -m window  --focus  next ||
+                     yabai -m window  --focus  first'';
+    prev-window  = ''yabai -m window  --focus  prev ||
+                     yabai -m window  --focus  last '';
+    move-next    = ''yabai -m window  --swap   next ||
+                     yabai -m window  --swap   first'';
+    move-prev    = ''yabai -m window  --swap   prev ||
+                     yabai -m window  --swap   last '';
+    display-prev = ''yabai -m display --focus  prev ||
+                     yabai -m display --focus  last '';
+    display-next = ''yabai -m display --focus  next ||
+                     yabai -m display --focus  first'';
+
+    current-space = ''
+      yabai -m query --spaces |
+        jq -r 'map(select(.focused | . == 1)) | .[] | .label'
+    '';
   };
 
   # Tie the knot, so 'self' works
   commands = makeCommands commands;
 };
-commands
+{
+  inherit commands spaces;
+
+  # Make the commands available as a package, so we can invoke them manually
+  package = attrsToDirs' "shortcuts" {
+    bin = { shortcuts = commands; };
+  };
+}
