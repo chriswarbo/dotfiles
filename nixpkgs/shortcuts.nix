@@ -441,6 +441,66 @@ with rec {
       yabai -m query --spaces |
         jq -r 'map(select(.focused | . == 1)) | .[] | .label'
     '';
+
+    # Tests. These aren't meant to be bound to anything, but are useful to run
+    # manually (if you don't mind your spaces getting messed around!)
+    test = ''
+      CODE=0
+      ${self.test-spaces-are-set-up} || CODE=1
+      ${self.test-switch-to        } || CODE=1
+      exit $CODE
+    '';
+
+    test-spaces-are-set-up = ''
+      CODE=0
+      FOUND=$(yabai -m query --spaces | jq 'length')
+      if [[ "$FOUND" -ne ${count} ]]
+      then
+        CODE=1
+        echo "error: Should have ${count} spaces, actually have $COUNT" 1>&2
+      fi
+
+      for L in ${unwords labels}
+      do
+        FOUND=$(yabai -m query --spaces |
+                jq --arg l "$L" 'map(select(.label == $l)) | length')
+        if [[ "$FOUND" -ne 1 ]]
+        then
+          CODE=1
+          echo "error: Found $FOUND spaces with label $L" 1>&2
+        fi
+      done
+      exit $CODE
+    '';
+
+    test-displays-have-spaces = ''
+      if [[ $(${self.display-count}) -eq 1 ]]
+      then
+        echo "info: Only 1 display, skipping test-displays-have-spaces" 1>&2
+        exit 0
+      fi
+
+      ${self.ensure-displays-have-spaces}
+    '';
+
+    test-switch-to = ''
+      CODE=0
+      START=$(${self.current-space})
+      ALL=$(echo -e '${concatStringsSep "\\n" labels}')
+      for REPEAT in $(seq 1 10)
+      do
+        TO=$(echo "$ALL" | shuf | head -n1)
+        ${self.switch-to} "$TO"
+        ON=$(${self.current-space})
+        if ! [[ "x$ON" = "x$TO" ]]
+        then
+          CODE=1
+          echo "error: Tried to switch to '$TO', ended up on '$ON'" 1>&2
+        fi
+      done
+      ${self.switch-to} "$START"
+      exit "$CODE"
+    '';
   };
 
   # Tie the knot, so 'self' works
