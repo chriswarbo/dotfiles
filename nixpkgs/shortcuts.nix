@@ -513,103 +513,42 @@ with rec {
                     end tell'
     '';
 
+
+
+      }
+
+      }
+
+      then
+        do
+          then
+          fi
+        done
+      fi
+
+      do
+        do
+
+        done
+      done
     arrange-spaces = ''
       # To minimise disruption if/when Yabai dies, we can use this script to
       # arrange spaces in order of their labels. This way, relabelling them
-      # should result in no changes, and hence no need to move windows.
+      # should result in no changes, and hence no need to move windows into the
+      # space where we expect them.
 
       # macOS numbers spaces on one display then another, and so on.
       # This means that, for example, l1 will be out of order if it's on
       # display 2; since whatever space(s) is on display 1 will come
       # first. The same applies to the last space having to be on the
       # highest-numbered display.
-      # Note that Yabai's display numbering *seems* to correspond to
-      # that of macOS, at least on my setup. This assumption might be
-      # wrong!
 
-      function info {
-        [[ -z "$DEBUG" ]] || echo "arrange-spaces: $@" 1>&2
-      }
+      ORIGINAL=$(${self.store-currently-visible})
 
-      function indexOf {
-        yabai -m query --spaces |
-          jq "map(select(.label == \"$1\")) | .[] | .index"
-      }
+      ${self.force-invisible-displays}
+      ${self.force-indices}
 
-      function displayOf {
-        yabai -m query --spaces |
-          jq "map(select(.label == \"$1\")) | .[] | .display"
-      }
-
-      function spacesInOrder {
-        info "Checking if spaces are in order"
-        SPACES=$(yabai -m query --spaces)
-        for N in ${unwords (map toString spaces)}
-        do
-          info "Checking space $N"
-          [[ $(indexOf "l$N") -eq "$N" ]] || return 1
-          info "Space $N is in the correct place"
-        done
-        info "All spaces are in the correct place"
-        return 0
-      }
-
-      info "Ensuring spaces are labelled first"
-      ${self.fix-up-spaces}
-
-      # Evenly distribute spaces across displays (easier to have a fixed
-      # target than enforce constraints on some arbitrary arrangement)
-      # TODO: Hardcoded to 2 displays at the moment.
-      DCOUNT=$(yabai -m query --displays | jq 'length')
-      info "Found $DCOUNT displays"
-      [[ "$DCOUNT" -lt 3 ]] || {
-        echo "Found $DCOUNT displays; we can only handle 1 or 2" 1>&2
-        exit 1
-      }
-      if [[ "$DCOUNT" -gt 1 ]]
-      then
-        info "External display is plugged in; we assume it's index 2"
-        for M in ${unwords (map toString spaces)}
-        do
-          if [[ "$M" -lt $(( ${count} / 2 )) ]]
-          then
-            D=1
-          else
-            D=2
-          fi
-          DM=$(displayOf "l$M")
-          info "Ensuring space $M is on display $D; it's on $DM"
-          if [[ "$DM" -ne "$D" ]]
-          then
-            info "Moving space $M from display $DM to display $D"
-            yabai -m space "l$M" --display "$D"
-          fi
-        done
-      fi
-
-      # Rearrange spaces in order of labels
-      for D in $(seq 1 "$DCOUNT")
-      do
-        while ! spacesInOrder
-        do
-          for M in ${unwords (map toString spaces)}
-          do
-            # We only execute a movement half the time; the randomness
-            # should prevent us getting stuck in a loop
-            if [[ $(indexOf "l$M") -lt "$M" ]]
-            then
-              [[ $(( RANDOM % 2 )) -eq 0 ]] ||
-                yabai -m space "l$M" --move next
-            fi
-
-            if [[ $(indexOf "l$M") -gt "$M" ]]
-            then
-              [[ $(( RANDOM % 2 )) -eq 0 ]] ||
-                yabai -m space "l$M" --move prev
-            fi
-          done
-        done
-      done
+      echo "$ORIGINAL" | ${self.restore-visible-spaces}
     '';
 
     # General commands
