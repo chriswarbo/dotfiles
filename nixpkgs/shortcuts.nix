@@ -887,6 +887,18 @@ with rec {
         # This lets us put simpler tests first.
         [
           {
+            name   = "focus-display";
+            script = ''
+              ${self.plugged-in} || exit 0
+              for N in $(seq 1 5)
+              do
+                D=$(( (RANDOM % 2) + 1 ))
+                ${self.focus-display} "$D"
+              done
+              exit 0
+            '';
+          }
+          {
             name   = "focus-space";
             script = ''
               for N in $(seq 1 10)
@@ -903,6 +915,101 @@ with rec {
                   ${fatal "Failed to focus space $L ($D); we're on $ON ($D2)"}
                 fi
               done
+            '';
+          }
+          {
+            name   = "space-of-window";
+            script = ''
+              SPACES=()
+              while read -r I
+              do
+                SPACES+=( $I )
+              done < <(yabai -m query --spaces | jq 'map(.index) | .[]')
+
+              ${debug "Found spaces ${"$"}{SPACES[@]}"}
+              for I in ${"$"}{SPACES[@]}
+              do
+                ${debug "Trying on space $I"}
+                L=$(yabai -m query --spaces |
+                    jq -r --argjson i "$I" \
+                       'map(select(.index == $i) | .label) | .[]')
+                yabai -m query --windows |
+                  jq --argjson i "$I" 'map(select(.space == $i) | .id) | .[]' |
+                  while read -r W
+                  do
+                    S=$(${self.space-of-window} "$W")
+                    if [[ "x$S" = "x$L" ]]
+                    then
+                      ${debug "Window $W was found to be from space $L"}
+                    else
+                      ${fatal "Window $W is from $L, not $S"}
+                    fi
+                  done
+              done
+            '';
+          }
+          {
+            name   = "arrange-spaces";
+            script = ''
+              if ! ${self.plugged-in}
+              then
+                ${info "Only 1 display, skipping test arrange-spaces"}
+                exit 0
+              fi
+
+              # Move as much as possible on to display 2
+              while read -r L
+              do
+                if [[ "x$(${self.current-space})" = "x$L" ]]
+                then
+                  ${debug "Not moving space $L to display 2, since it's focused"}
+                  continue
+                fi
+
+                if [[ "$(${self.display-of-space} "$L")" -eq 2 ]]
+                then
+                  ${debug "Not moving space $L to display 2, since it's there already"}
+                  continue
+                fi
+
+                SPACESON1=$(yabai -m query --displays |
+                            jq 'map(select(.index == 1)) | .[] | .spaces | length')
+                if [[ "$SPACESON1" -gt 1 ]]
+                then
+                  ${debug "Display 1 has $SPACESON1 spaces, moving one to display 2"}
+                else
+                  ${debug "Display 1 has $SPACESON1 spaces, not moving another"}
+                  continue
+                fi
+
+                ${self.move-space-to-display} "$L" 2
+                ON=$(${self.display-of-space} "$L")
+                if [[ "$ON" -ne 2 ]]
+                then
+                  ${fatal "Moved $L to display 2, it's on display $ON; aborting"}
+                else
+                  ${debug "Moved $L to display 2, it's now on display $ON"}
+                fi
+              done < ${labelFile}
+
+              ${debug "About to arrange spaces"}
+              ${self.arrange-spaces}
+
+              COUNTS=$(yabai -m query --displays | jq 'map(.spaces | length | sort)')
+              if [[ "x$COUNTS" = "x${with rec {
+                                       l = length spaces;
+                                       x = l / 2;
+                                       y = l - x;
+                                     };
+                                     toJSON [x y]}" ]]
+              then
+                ${debug "Spaces are distributed roughly evenly $COUNTS, as expected"}
+              else
+                ${error "Expected even distribution of spaces, got $COUNTS"}
+                CODE=1
+              fi
+
+              exit $CODE
             '';
           }
           {
@@ -941,10 +1048,59 @@ with rec {
               ${self.ensure-displays-have-spaces}
             '';
           }
+          {
+            name   = "move-window";
+            script = ''
+              CODE=0
 
-      ${self.ensure-displays-have-spaces}
-    '';
+              CWINDOW=$(${self.current-window})
+               CSPACE=$(${self.space-of-window} "$CWINDOW")
+              ${debug "Focused on window $CWINDOW on space $CSPACE"}
+              C=$(${self.current-space})
+              if ! [[ "x$CSPACE" = "x$C" ]]
+              then
+                ${fatal "current-space gave $C, space-of-window gave $CSPACE"}
+              fi
 
+              ${debug "Picking a random window and space"}
+              W=$(${pick-window})
+              TO=$(${self.pick-existing-space})
+
+              ${debug "Focusing space of window $W"}
+              FROM=$(${self.space-of-window} "$W")
+              ${self.focus-space} "$FROM"
+              ON=$(${self.current-space})
+              if [[ "x$ON" = "x$FROM" ]]
+              then
+                ${debug "We switched to space $ON, for window $W, as expected"}
+              else
+                ${debug "We should have switched to space $FROM, but we're on $ON"}
+                ${fatal "move-window test setup failed, aborting"}
+              fi
+              yabai -m window --focus "$W"
+              ${self.move-window} "$TO"
+
+              OURSPACE=$(${self.current-space})
+              if [[ "x$OURSPACE" = "x$FROM" ]]
+              then
+                ${debug "Moving windows doesn't change our space, as expected"}
+              else
+                ${error "On space $ON, should still be on $OURSPACE"}
+                CODE=1
+              fi
+
+              NEWSPACE=$(${self.space-of-window} "$W")
+              if [[ "x$NEWSPACE" = "x$TO" ]]
+              then
+                ${debug "Window $W was sent to space $TO as it should"}
+              else
+                ${error "Window $W is on space $NEWSPACE, but it was sent to $TO"}
+                CODE=1
+              fi
+
+              exit $CODE
+            '';
+          }
           {
             name   = "switch-to";
             script = ''
