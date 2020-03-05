@@ -808,10 +808,13 @@ with rec {
     # bring it to the current display if it isn't already.
     switch-to = ''
       ${self.maybe-fix-spaces}
-      ${self.ensure-displays-have-spaces}
-      ${self.force-space-focus} "$1"
+      ${self.arrange-spaces}
+      D=$(${self.current-display})
+      ${self.move-space-to-display} "$1" "$D"
+      yabai -m space --focus "$1"
     '';
 
+    move-window  = ''yabai -m window  --space  "$1" '';
     close-window = ''yabai -m window  --close       '';
     make-main    = ''yabai -m window  --swap   west '';
     toggle-split = ''yabai -m window  --toggle split'';
@@ -828,9 +831,15 @@ with rec {
     display-next = ''yabai -m display --focus  next ||
                      yabai -m display --focus  first'';
 
-    current-space = ''
-      yabai -m query --spaces |
-        jq -r 'map(select(.focused | . == 1)) | .[] | .label'
+    pick-existing-space = ''
+      yabai -m query --spaces | jq -r 'map(.label) | .[]' |
+        shuf | head -n1
+    '';
+
+    pick-array-elements = ''
+      COUNT=1
+      [[ -z "$1" ]] || COUNT="$1"
+      jq -r '.' | shuf | head -n"$COUNT"
     '';
 
     # Tests. These aren't meant to be bound to anything, but are useful to run
