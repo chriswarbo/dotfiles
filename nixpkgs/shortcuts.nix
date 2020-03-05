@@ -451,9 +451,9 @@ with rec {
       # This would be nice to put in Yabai's startup config, but doesn't
       # seem to work (maybe only "config" options work there?).
       # TODO: Prefer destroying empty spaces, to reduce window shuffling
-
-      ${self.populate-spaces}
-      ${self.label-spaces}
+      LAX=1 ${self.populate-spaces}
+      LAX=1 ${self.label-spaces}
+      LAX=1 ${self.arrange-spaces}
     '';
 
     label-spaces = ''
