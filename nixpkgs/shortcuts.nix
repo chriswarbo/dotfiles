@@ -658,13 +658,11 @@ with rec {
     # General commands
     #"${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
 
-    # mod-r
     force-rejig = ''
       ${self.arrange-spaces}
-      pkill yabai || true
-      sleep 2
+      #pkill yabai || true
+      #sleep 2
       ${self.fix-up-spaces}
-      pkill skhd || true
     '';
 
     # Tile/float the focused window
