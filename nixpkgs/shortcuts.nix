@@ -672,12 +672,11 @@ with rec {
 
     # Window resizing (emulates XMonad)
     # Vertical resizing is easy: just change where the bottom is
-    # "${mod "i"}" = "yabai -m window --resize bottom:0:-60";
-    # "${mod "o"}" = "yabai -m window --resize bottom:0:60";
+    shrink-vert = "yabai -m window --resize bottom:0:-60";
+    grow-vert   = "yabai -m window --resize bottom:0:60";
 
     # Horizontal requires offset calculations
-    # mod-h
-    resize-left = ''
+    shrink-horiz = ''
       X=$(yabai -m query --windows --window | jq .frame.x)
       if [[ "$X" -lt 20 ]]
       then
@@ -686,8 +685,7 @@ with rec {
         yabai -m window --resize left:-60:0
       fi
     '';
-    # mod-l
-    resize-right = ''
+    grow-horiz = ''
       X=$(yabai -m query --windows --window | jq .frame.x)
       if [[ "$X" -lt 20 ]]
       then

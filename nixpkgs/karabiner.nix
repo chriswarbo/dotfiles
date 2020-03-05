@@ -83,6 +83,10 @@ with rec {
         make-main    =        mod "return_or_enter";
         fix-up-emacs =        mod "e"              ;
         force-rejig  =        mod "r"              ;
+        shrink-vert  =        mod "i"              ;
+        grow-vert    =        mod "o"              ;
+        shrink-horiz =        mod "h"              ;
+        grow-horiz   =        mod "l"              ;
       }
       ++
       # Switch spaces with number keys
