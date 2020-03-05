@@ -365,14 +365,14 @@ with rec {
       SPACES=$(yabai -m query --spaces)
 
       # Note: 'label' is a keyword in jq
-      UNLABELLED=$(echo "$SPACES" | jq '${unwords [
-        "map(select(.label as $l      |"
-                    "${toJSON labels} |"
-                    "map(. == $l)     |"
-                    "any | not))      |"
-        "map(.index)"
-      ]}')
-      if echo "$UNLABELLED" | jq -e 'length | . > 0' > /dev/null
+      UNLABELLED=$(echo "$SPACES" |
+                   jq 'map(select(.label as $l       |${""
+                                  } ${toJSON labels} |${""
+                                  } map(. == $l)     |${""
+                                  } any | not) | .index)')
+      COUNT=$(echo "$UNLABELLED" | jq 'length')
+      ${debug "There are $COUNT spaces which aren't labelled properly"}
+      if [[ "$COUNT" -gt 0 ]]
       then
         CODE=0
         echo "$UNLABELLED" | jq '.[]'
@@ -381,17 +381,18 @@ with rec {
       # Look for spaces with duplicate labels
       ${unlines
         (map (l: ''
-               if echo "$SPACES" | jq -e '${unwords [
-                 "map(select(.label | . == ${toJSON l} )) |"
-                 "length | . > 1"
-               ]}' > /dev/null
+               COUNT=$(echo "$SPACES" |
+                       jq 'map(select(.label | . == ${toJSON l} )) | length')
+               ${debug "Found $COUNT spaces with label ${l}"}
+               if [[ "$COUNT" -gt 1 ]]
                then
                  # This label is applied to multiple spaces, spit
                  # out the index of one of them (arbitrarily)
-                 echo "$SPACES" | jq '${unwords [
-                   "map(select(.label | . == ${toJSON l} )) |"
-                   ".[0] | .index"
-                 ]}'
+                 I=$(echo "$SPACES" |
+                     jq 'map(select(.label | . == ${toJSON l} )) |${""
+                         }.[0] | .index')
+                 ${debug "Too many spaces with label ${l}: $COUNT, should be 1"}
+                 ${debug "Picked space index $I, out of those with label ${l}"}
                  CODE=0
                fi
              '')
@@ -401,8 +402,12 @@ with rec {
       # Note that in normal operation we should only be called when
       # we need to find a space for a label, which implies that
       # there should be at least one available; hence the warning.
-      [[ "$CODE" -eq 0 ]] ||
-        echo "Warning: Couldn't find spaces with dodgy labels" 1>&2
+      if [[ "$CODE" -eq 0 ]]
+      then
+        ${debug "Found some unlabelled spaces, as we expected"}
+      else
+        ${error "Didn't find any unlabelled spaces; do we have enough?"}
+      fi
       exit "$CODE"
     '';
 
