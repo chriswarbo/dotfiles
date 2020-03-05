@@ -34,6 +34,80 @@ with rec {
     # Common queries
     display-count = "yabai -m query --displays | jq 'length'";
 
+    plugged-in = "[[ $(${self.display-count}) -gt 1 ]]";
+
+    current-display = ''
+      yabai -m query --spaces |
+        jq 'map(select(.focused == 1)) | .[] | .display'
+    '';
+
+    display-of-space = ''
+      yabai -m query --spaces |
+        jq --arg l "$1" 'map(select(.label == $l)) | .[] | .display'
+    '';
+
+    space-on-display = ''
+      [[ $(${self.display-of-space} "$1") -eq "$2" ]]
+    '';
+
+    index-of-space = ''
+      yabai -m query --spaces |
+        jq --arg l "$1" 'map(select(.label == $l)) | .[] | .index'
+    '';
+
+    label-at-index = ''
+      yabai -m query --spaces |
+        jq --arg i "$1" 'map(select(.index == $i)) | .[] | .label'
+    '';
+
+    space-exists = ''
+      yabai -m query --spaces |
+        jq -e --arg l "$1" 'map(select(.label == $l)) | length | . > 0' \
+        > /dev/null
+    '';
+
+    space-index-exists = ''
+      yabai -m query --spaces |
+        jq -e --arg i "$1" 'map(select(.index == $i)) | length | . > 0' \
+        > /dev/null
+    '';
+
+    current-space = ''
+      yabai -m query --spaces |
+        jq -r 'map(select(.focused | . == 1)) | .[] | .label'
+    '';
+
+    space-is-visible = ''
+      yabai -m query --spaces |
+        jq -e --arg l "$1" 'map(select(.label == $l)) | .[] | .visible == 1' \
+        > /dev/null
+    '';
+
+    number-from-label = ''
+      echo "$1" | grep -o '[0-9]*'
+    '';
+
+    space-has-index = ''
+      [[ $(${self.index-of-space} "$1") -eq "$2" ]]
+    '';
+
+    space-index-matches = ''
+      N=$(${self.number-from-label} "$1")
+      ${self.space-has-index} "$1" "$N"
+    '';
+
+    current-window = ''
+      yabai -m query --windows |
+        jq -r 'map(select(.focused == 1)) | .[] | .id'
+    '';
+
+    space-of-window = ''
+      I=$(yabai -m query --windows |
+            jq --argjson w "$1" 'map(select(.id == $w)) | .[] | .space')
+      yabai -m query --spaces |
+        jq -r --argjson i "$I" 'map(select(.index == $i) | .label) | .[]'
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
