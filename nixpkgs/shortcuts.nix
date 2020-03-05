@@ -1,6 +1,6 @@
 # Commands to invoke when we press hot keys. These are mostly for controlling
 # the Yabai window manager.
-{ attrsToDirs', lib, wrap }:
+{ attrsToDirs', lib, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -10,6 +10,8 @@ with rec {
   spaces = range 1 9;  # Ignore 0 to avoid off-by-one nonsense
   count  = toString (length spaces);
   labels = map (n: "l${toString n}") spaces;
+
+  labelFile = writeScript "workspace-labels" (unlines labels);
 
   unlines = concatStringsSep "\n";
   unwords = concatStringsSep " ";
