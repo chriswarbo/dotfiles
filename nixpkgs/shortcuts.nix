@@ -513,6 +513,31 @@ with rec {
                     end tell'
     '';
 
+    force-invisible-displays = ''
+      # We want the first half of the spaces on display 1, the second on display
+      # 2. This way, we should never run out of spaces on a display (e.g. when
+      # we're asked to move a space to another display) and if/when things go
+      # awry our labels should correspond more closely to the macOS indices.
+      PRE="force-invisible-displays:"
+
+      if ! ${self.plugged-in}
+      then
+        ${debug "$PRE Not plugged in to 1 monitor, skipping"}
+        exit 0
+      fi
+      ${debug "$PRE Have 2 displays, forcing arrangement"}
+      ${unwords (map (n: with { s = toString n; }; ''
+                           if ${self.space-is-visible} "l${s}"
+                           then
+                             ${debug "$PRE Skipping visible space l${s}"}
+                           else
+                             ${debug "$PRE Forcing display of space l${s}"}
+                             D=${if n <= (length spaces / 2) then "1" else "2"}
+                             ${self.move-space-to-display} "l${s}" "$D"
+                           fi
+                     '')
+                     spaces)}
+    '';
 
 
       }
