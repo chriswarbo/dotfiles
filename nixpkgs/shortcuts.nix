@@ -413,38 +413,32 @@ with rec {
 
     # Destroy spaces if we have too many, create if we don't have enough
     populate-spaces = ''
-      # Ensure we have ${count} spaces in total
-      SPACES=$(yabai -m query --spaces)
-      D=$(echo "$SPACES" |
-          jq 'map(select(.focused == 1)) | .[] | .display')
-      SWITCHED=0
-      while [[ $(echo "$SPACES" | jq 'length') -gt ${count} ]]
-      do
-        echo "Need to add more spaces" 1>&2
-        # If there's only one space on this display, switch to another
-        if [[ $(yabai -m query --spaces --display |
-                jq 'length') -eq 1 ]]
-        then
-          echo "Switching display to avoid underpopulation" 1>&2
-          SWITCHED=1
-          yabai   -m display --focus next ||
-            yabai -m display --focus first
-        fi
-        yabai -m space --destroy || true
-        SPACES=$(yabai -m query --spaces)
-      done
-      [[ "$SWITCHED" -eq 0 ]] || yabai -m display --focus "$D" || true
-      unset D
-      unset SWITCHED
+      ${debug "populate-spaces: Ensuring we have ${count} spaces in total"}
+      D=$(${self.current-display})
 
-      if [[ $(echo "$SPACES" | jq 'length') -lt ${count} ]]
+      while [[ $(yabai -m query --spaces | jq 'length') -gt ${count} ]]
+      do
+        ${debug "populate-spaces: Too many spaces, need to destroy some"}
+        if [[ $(yabai -m query --spaces --display | jq 'length') -eq 1 ]]
+        then
+          ${debug "populate-spaces: Switching display to avoid underpopulation"}
+          ${self.display-next}
+        fi
+        ${debug "populate-spaces: Destroying a space"}
+        yabai -m space --destroy
+      done
+      unset D
+
+      while [[ $(yabai -m query --spaces | jq 'length') -lt ${count} ]]
+      do
+        ${debug "populate-spaces: Need to create more spaces"}
+        yabai -m space --create || true
+      done
+
+      C=$(yabai -m query --spaces | jq 'length')
+      if [[ "$C" -ne ${count} ]]
       then
-        echo "Need to create more spaces" 1>&2
-        for N in seq 1 $(echo "$SPACES" | jq 'length | ${count} - .')
-        do
-          yabai -m space --create || true
-        done
-        SPACES=$(yabai -m query --spaces)
+        ${fatal "populate-spaces: Need ${count} spaces, ended up with $C"}
       fi
     '';
 
