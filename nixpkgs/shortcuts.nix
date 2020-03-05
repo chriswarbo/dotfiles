@@ -539,23 +539,102 @@ with rec {
                      spaces)}
     '';
 
+    force-indices = ''
+      # The spaces on a display should be in order of their labels, so if/when
+      # something goes wrong there's little disruption to our window layouts.
+      PRE="force-indices:"
 
+      function shouldBeFirst {
+        N=$(echo "$1" | grep -o '[0-9]*')
+        [[ "$N" -le ${toString (length spaces / 2)} ]]
       }
 
+      function shouldBeSecond {
+        M=$(echo "$1" | grep -o '[0-9]*')
+        [[ "$M" -le ${toString (length spaces / 2)} ]]
       }
 
+      # There are two scenarios to handle
+      VISIBLE1=$(yabai -m query --spaces |
+                 jq -r 'map(select(.visible == 1) | select(.display == 1)) |${""
+                        } .[] | .label')
+      VISIBLE2=$(yabai -m query --spaces |
+                 jq -r 'map(select(.visible == 1) | select(.display == 2)) |${""
+                        } .[] | .label')
+
+      if ${self.plugged-in}           &&
+         ! shouldBeFirst  "$VISIBLE1" &&
+         ! shouldBeSecond "$VISIBLE2"
       then
+        ${debug "$PRE Scenario 1: Neither display shows their own space"}
+        # This is easy enough: we swap the index locations of the visible spaces
+        I1=$(${self.number-from-label} "$VISIBLE2")
+        I2=$(${self.number-from-label} "$VISIBLE1")
+
+        while true
         do
+          MISPLACED=0
+          for L in ${unwords labels}
+          do
+            I=$(${self.number-from-label} "$L")
+            [[ "x$L" = "x$VISIBLE1" ]] && I="$I1"
+            [[ "x$L" = "x$VISIBLE2" ]] && I="$I2"
+            if ! ${self.space-has-index} "$L" "$I"
+            then
+              MISPLACED=1
+              ${self.shift-space-to-index} "$L" "$I"
+            fi
+          done
+          if [[ "$MISPLACED" -eq 0 ]]
           then
+            ${debug "$PRE All spaces at the correct index"}
+            break
           fi
         done
+        exit 0
       fi
 
+      ${debug "$PRE Scenario 2: Spaces should be in numerical order"}
+      for D in 1 2
       do
+        ${debug "$PRE Sorting spaces on display $D"}
+        # Sorting by index should be the same as by label; otherwise we need to
+        # do some rearranging.
+        # If a display isn't plugged in, its spaces will be [] which will match
+        # both sorting methods.
+        while yabai -m query --spaces |
+              jq -e --argjson d "$D" 'map(select(.display == $d))     | ${""
+                                      } sort_by(.index) | map(.label) | ${""
+                                      } . as $raw | $raw | debug | sort | . != $raw' \
+              > /dev/null
         do
+          ${debug "$PRE Picking two spaces to try and swap"}
 
+          SPACES=$(yabai -m query --spaces |
+                   jq -r --argjson d "$D" \
+                      'map(select(.display == $d) | .label) | .[]')
+          ${debug "$PRE SPACES: $SPACES"}
+          PAIR=$(echo "$SPACES" | shuf | head -n2 | sort)
+          ${debug "$PRE PAIR: $PAIR"}
+
+          S1=$(echo "$PAIR" | head -n1)
+          S2=$(echo "$PAIR" | tac | head -n1)
+
+          I1=$(${self.index-of-space} "$S1")
+          I2=$(${self.index-of-space} "$S2")
+          if [[ "$I1" -gt "$I2" ]]
+          then
+            ${debug "$PRE Space $S1 ($I1) should appear before $S2 ($I2)"}
+            ${self.focus-space} "$S1"
+            yabai -m space --move next
+          else
+            ${debug "$PRE Space $S1 ($I1) appears before $S2 ($I2)"}
+          fi
         done
       done
+      exit 0
+    '';
+
     arrange-spaces = ''
       # To minimise disruption if/when Yabai dies, we can use this script to
       # arrange spaces in order of their labels. This way, relabelling them
