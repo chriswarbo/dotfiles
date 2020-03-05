@@ -90,7 +90,7 @@ with trace "TODO: Plug scripts in directly, don't add to env"
       map (n: with { s = toString n; }; {
             conditions = whenUnset leftCommandVar;
             from       = mod s;
-            to         = run "'${commands.switch-to} l${s}'";
+            to         = run "'${package}/bin/shortcuts/switch-to l${s}'";
           })
           spaces
       ++
@@ -98,7 +98,7 @@ with trace "TODO: Plug scripts in directly, don't add to env"
       map (n: with { s = toString n; }; {
             conditions = whenUnset leftCommandVar;
             from       = shift (mod s);
-            to         = run "'yabai -m window --space l${s}''";
+            to         = run "'${package}/bin/shortcuts/move-window l${s}'";
           })
           spaces
       ;
