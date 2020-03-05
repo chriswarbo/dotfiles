@@ -203,6 +203,22 @@ with rec {
       echo "$DATA" | ${self.restore-focused-space}
     '';
 
+    shift-space-to-index = ''
+      while [[ $(${self.index-of-space} "$1") -gt "$2" ]]
+      do
+        yabai -m space "$1" --move prev
+      done
+      while [[ $(${self.index-of-space} "$1") -lt "$2" ]]
+      do
+        yabai -m space "$1" --move next
+      done
+    '';
+
+    shift-space-to-matching-index = ''
+      I=$(echo "$1" | grep -o '[0-9]*')
+      ${self.shift-space-to-index} "$1" "$I"
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
