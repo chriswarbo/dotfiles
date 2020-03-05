@@ -219,6 +219,39 @@ with rec {
       ${self.shift-space-to-index} "$1" "$I"
     '';
 
+    focus-display = ''
+      ${self.lax-spaces-are-set-up} focus-display
+
+      ${debug "focus-display: Focusing $1"}
+      COUNT=0
+      while [[ $(${self.current-display}) -ne $1 ]]
+      do
+        ${debug "focus-display: On display $(${self.current-display})"}
+        if [[ "$COUNT" -gt 10 ]]
+        then
+          ${fatal "focus-display: Failed to switch to display $1"}
+        fi
+
+        if [[ "$COUNT" -lt 4 ]]
+        then
+          yabai -m display --focus "$1"
+        else
+          yabai -m display --focus next
+        fi
+        sleep 0.2
+        COUNT=$(( COUNT + 1 ))
+      done
+
+      D=$(${self.current-display})
+      if [[ "$D" -eq "$1" ]]
+      then
+        ${debug "focus-display: Switched focus to display $1"}
+      else
+        ${fatal "focus-display: Should be on $1, actually on $D"}
+      fi
+      exit 0
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
