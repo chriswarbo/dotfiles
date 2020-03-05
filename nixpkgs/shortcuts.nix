@@ -108,6 +108,101 @@ with rec {
         jq -r --argjson i "$I" 'map(select(.index == $i) | .label) | .[]'
     '';
 
+    # Helper scripts
+
+    store-currently-visible = ''
+      # We can fiddle with spaces as much as we like, as long as:
+      #  - The 'visible' space on each display remains on the same display
+      #  - The 'visible' space on each display remains visible
+      #  - The 'focused' display remains focused
+      #  - The 'focused' space remains focused
+      #
+      # This script dumps out all of that information to stdout, so it can be
+      # restored by other scripts (selectively, since the whole point of our
+      # scripts is that they change some things)
+      VISIBLE=$(yabai -m query --spaces |
+                jq 'map(select(.visible == 1) | .label)')
+
+      DISPLAYS=$(yabai -m query --spaces |
+                 jq 'map(select(.visible == 1) |${""
+                         } {"key": .label, "value": .display}) | from_entries')
+
+      FOCUSED_DISPLAY=$(${self.current-display})
+      FOCUSED_SPACE=$(${self.current-space} | jq -R '.')
+
+      jq -n --argjson visible  "$VISIBLE"         \
+            --argjson displays "$DISPLAYS"        \
+            --argjson fdisplay "$FOCUSED_DISPLAY" \
+            --argjson fspace   "$FOCUSED_SPACE"   \
+            '{"visible": {"spaces": $visible, "displays": $displays}, ${""
+             }"focused": {"space" : $fspace,  "display" : $fdisplay}}'
+    '';
+
+    restore-visible-to-displays = ''
+      # Reads in the output of self.store-currently-visible and puts the
+      # previously visible spaces back on their original displays
+      DATA=$(cat)
+      echo "$DATA" | jq -r '.visible | .spaces | .[]' | while read -r L
+      do
+        D=$(echo "$DATA" | jq --arg l "$L" '.visible | .displays | .[$l]')
+        ${debug "Putting previously-visible space $L back on display $D"}
+        ${self.move-space-to-display} "$L" "$D"
+      done
+    '';
+
+    restore-focused-space = ''
+      # Reads in the output of self.store-currently-visible and tries to focus
+      # the previously-focused space; on whichever display it is currently on.
+
+      # Get the label of the space we need to focus
+      DATA=$(cat)
+      L=$(echo "$DATA" | jq -r '.focused | .space')
+
+      # Switch to that space's display, if we're not currently there
+      D=$(${self.display-of-space} "$L")
+      [[ "$(${self.current-display})" -eq "$D" ]] ||
+        yabai -m display --focus "$D"
+
+      # Ensure the previously focused space is currently focused
+      [[ "$(${self.current-space})"   -eq "$L" ]] ||
+        yabai -m space   --focus "$L"
+    '';
+
+    restore-visible-spaces = ''
+      # Reads in the output of self.store-currently-visible and tries to ensure
+      # that the previously visible spaces are still visible. Note that this
+      # might not be possible, if some have been moved to the same display. In
+      # these cases we prefer to display the previously-focused space.
+      #
+      # If you want these spaces back on the same display as well, use
+      # self.restore-visible-to-displays first, then this.
+
+      # Focus each of the previously-visible spaces:
+      #  1) If they've not changed displays, then we will get one per display,
+      #     as before.
+      #  2) If their displays have changed, but there's still one per display,
+      #     then they'll all be visible (but on different displays than before)
+      #  3) If they've moved on to the same display then only one of them will
+      #     become visible (arbitrarily), whilst the other display will continue
+      #     to show whatever it had before this script started.
+      DATA=$(cat)
+      echo "$DATA" | jq -r '.visible | .spaces | .[]' | while read -r L
+      do
+        ${self.focus-space} "$L"
+      done
+
+      # We now focus the originally-focused display. We only do this such that
+      # in scenario (3) we'll definitely end up with the previously-focused
+      # space being visible (otherwise we might get a different
+      # previously-visible which happens to now be on the same display).
+      #
+      # This doesn't affect visibility in the other two scenarios, so we don't
+      # care. The focus may change, but this script makes no guarantees about
+      # that anyway, so it's fine (i.e. if you want a particular space to be
+      # focused after running this script, you need to do that yourself)
+      echo "$DATA" | ${self.restore-focused-space}
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
