@@ -311,6 +311,53 @@ with rec {
       exit 0
     '';
 
+    move-space-to-display = ''
+      # Yabai only seems able to move the active space between displays. This
+      # command will switch to the given space, move it to the given display,
+      # then switch back to wherever we came from.
+      ${self.spaces-are-set-up}
+
+      ${debug "Seeing if space $1 is already on display $2"}
+      D=$(${self.display-of-space} "$1")
+      if [[ "$D" -eq "$2" ]]
+      then
+        ${debug "Nothing to do, $1 is already on $2, short-circuiting"}
+        exit 0
+      fi
+      ${debug "Space $1 has display $D, we need to move it to $2"}
+
+      ${debug "Storing currently visible and focused spaces"}
+      ORIGINAL=$(${self.store-currently-visible})
+
+      ${debug "Making sure $1 is focused"}
+      ${self.focus-space} "$1"
+
+      C=$(${self.current-space})
+      if [[ "x$C" = "x$1" ]]
+      then
+        ${debug "Focused space $1, as we expected"}
+      else
+        ${fatal "We should have focused space $1, instead we have $C, aborting"}
+      fi
+      unset C
+
+      ${debug "Sending space $1 to display $2"}
+      yabai -m space --display "$2"
+
+      D=$(${self.display-of-space} "$1")
+      if [[ "$D" -eq "$2" ]]
+      then
+        ${debug "Space $1 now has display $2, like we wanted"}
+      else
+        ${fatal "Space $1 was meant to get display $2, actually has $D"}
+      fi
+
+      ${debug "Restoring visible and focused spaces"  }
+      echo "$ORIGINAL" | ${self.restore-visible-spaces}
+      echo "$ORIGINAL" | ${self.restore-focused-space }
+      ${debug "Finished moving space $1 to display $2"}
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
