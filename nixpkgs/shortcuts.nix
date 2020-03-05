@@ -697,11 +697,31 @@ with rec {
       fi
     '';
 
-    # If our spaces aren't labelled, something is up
-    maybe-fix-spaces = ''
+    spaces-are-set-up = ''
       if yabai -m query --spaces | jq -e 'map(.label) | sort | . != ${
         toJSON (map (n: "l${toString n}") spaces)
       }' > /dev/null
+      then
+        ${debug "spaces-are-set-up: Spaces aren't set up properly"}
+        exit 1
+      fi
+      ${debug "spaces-are-set-up: Spaces are set up properly"}
+      exit 0
+    '';
+
+    lax-spaces-are-set-up = ''
+      # Check if spaces are set up, unless LAX is set. This lets us avoid checks
+      # when doing the actual setup, whilst still doing them by default after.
+      if [[ -z "$LAX" ]] && ! ${self.spaces-are-set-up}
+      then
+        ${fatal "$1: Spaces aren't set up"}
+      fi
+      exit 0
+    '';
+
+    # If our spaces aren't labelled, something is up
+    maybe-fix-spaces = ''
+      if ! ${self.spaces-are-set-up}
       then
         echo "Fixing up spaces first" 1>&2
         ${self.fix-up-spaces}
