@@ -16,6 +16,11 @@ with rec {
   unlines = concatStringsSep "\n";
   unwords = concatStringsSep " ";
 
+  info  = str: ''echo "info: ${str}" 1>&2'';
+  debug = str: ''[[ -z "$DEBUG" ]] || echo "debug: ${str}" 1>&2'';
+  error = str: ''echo "error: ${str}" 1>&2'';
+  fatal = str: error str + ''; echo "Fatal error, aborting" 1>&2; exit 1'';
+
   makeScript = name: script: wrap {
     inherit name;
     script = ''
