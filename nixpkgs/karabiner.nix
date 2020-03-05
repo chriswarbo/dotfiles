@@ -2,8 +2,7 @@
 
 with builtins;
 with lib;
-with trace "TODO: Plug scripts in directly, don't add to env"
-  trace "TODO: Add tests for scripts" rec {
+with rec {
   # The commands we're going to bind to keys
   inherit (shortcuts) commands package spaces;
 
