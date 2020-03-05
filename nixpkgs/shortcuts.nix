@@ -252,6 +252,65 @@ with rec {
       exit 0
     '';
 
+    focus-space = ''
+      ${self.lax-spaces-are-set-up} focus-space
+
+      if ! ${self.space-exists} "$1"
+      then
+        ${fatal "focus-space: Asked to focus space $1, which doesn't exist"}
+      fi
+
+      S1=$(${self.current-space})
+      ${debug "focus-space: We're on space $S1, asked to focus $1"}
+
+      # Focus the display of the given space
+      ${self.focus-display} "$(${self.display-of-space} "$1")"
+
+      # Focus the given space, if it's not already
+      COUNT=0
+      while ! [[ "x$(${self.current-space})" = "x$1" ]]
+      do
+        if [[ "$COUNT" -gt 30 ]]
+        then
+          ${fatal "focus-space: Couldn't get space $1 focused"}
+        fi
+
+        if [[ $(( COUNT % 10 )) -eq 9 ]]
+        then
+          ${self.display-prev}; sleep 0.2
+          ${self.display-next}; sleep 0.2
+        fi
+
+        if [[ $(( COUNT % 15 )) -eq 4 ]]
+        then
+          yabai   -m space --focus next  2>/dev/null ||
+            yabai -m space --focus first
+        fi
+
+        if [[ "$COUNT" -gt 3 ]]
+        then
+          R=$(${self.pick-existing-space})
+          ${debug "focus-space: Struggling to focus; trying from $R"}
+          yabai -m space --focus "$R"
+          sleep 0.2
+        fi
+
+        ${debug "focus-space: $(${self.current-space}) focused; focusing $1"}
+        yabai -m space --focus "$1"
+        sleep 0.2
+        COUNT=$(( COUNT + 1 ))
+      done
+
+      S3=$(${self.current-space})
+      if [[ "x$S3" = "x$1" ]]
+      then
+        ${debug "focus-space: Successfully focused space $1"}
+      else
+        ${fatal "focus-space: Should've focused space $1, we're on $S3"}
+      fi
+      exit 0
+    '';
+
     find-unlabelled = ''
       # Assume we didn't find anything
       CODE=1
@@ -711,6 +770,25 @@ with rec {
         # We use this list format, rather than an attrset, to enforce the order.
         # This lets us put simpler tests first.
         [
+          {
+            name   = "focus-space";
+            script = ''
+              for N in $(seq 1 10)
+              do
+                L=$(${self.pick-existing-space})
+                ${self.focus-space} "$L"
+                ON=$(${self.current-space})
+                if [[ "x$ON" = "x$L" ]]
+                then
+                  ${debug "Focused space $L successfully"}
+                else
+                  D=$(${self.display-of-space} "$L")
+                  D2=$(${self.current-display})
+                  ${fatal "Failed to focus space $L ($D); we're on $ON ($D2)"}
+                fi
+              done
+            '';
+          }
           {
             name   = "spaces-are-set-up";
             script = ''
