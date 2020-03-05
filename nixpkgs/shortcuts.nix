@@ -669,62 +669,121 @@ with rec {
 
     # Tests. These aren't meant to be bound to anything, but are useful to run
     # manually (if you don't mind your spaces getting messed around!)
-    test = ''
+    run-tests = ''
       CODE=0
-      ${self.test-spaces-are-set-up} || CODE=1
-      ${self.test-switch-to        } || CODE=1
-      exit $CODE
-    '';
 
-    test-spaces-are-set-up = ''
-      CODE=0
-      FOUND=$(yabai -m query --spaces | jq 'length')
-      if [[ "$FOUND" -ne ${count} ]]
-      then
-        CODE=1
-        echo "error: Should have ${count} spaces, actually have $COUNT" 1>&2
-      fi
+      function restore {
+        ${debug "Restoring space layout after tests"}
+        echo "$ORIGINAL" | ${self.restore-visible-to-displays}
+        echo "$ORIGINAL" | ${self.restore-visible-spaces}
+        echo "$ORIGINAL" | ${self.restore-focused-space}
+      }
 
-      for L in ${unwords labels}
-      do
-        FOUND=$(yabai -m query --spaces |
-                jq --arg l "$L" 'map(select(.label == $l)) | length')
-        if [[ "$FOUND" -ne 1 ]]
+      function go {
+        ${debug "RUNNING: $1"}
+        if "$2"
         then
+          ${debug "PASS: $1"}
+        else
           CODE=1
-          echo "error: Found $FOUND spaces with label $L" 1>&2
+          ${error "FAIL: $1"}
         fi
-      done
-      exit $CODE
-    '';
+        restore
+      }
 
-    test-displays-have-spaces = ''
-      if [[ $(${self.display-count}) -eq 1 ]]
-      then
-        echo "info: Only 1 display, skipping test-displays-have-spaces" 1>&2
-        exit 0
-      fi
+      ${self.fix-up-spaces}
+      ${debug "Storing space layout"}
+      ORIGINAL=$(${self.store-currently-visible})
+
+      ${debug "Running tests"}
+      ${unlines (map ({name, script}: ''
+                       go '${name}' '${makeScript name script}'
+                     '')
+        (with rec {
+          pick-window = makeScript "pick-window" ''
+            yabai -m query --windows | jq -r 'map(.id) | .[]' | shuf | head -n1
+          '';
+
+          pick-correct-label = makeScript "pick-correct-label" ''
+            shuf < ${labelFile} | head -n1
+          '';
+        };
+        # We use this list format, rather than an attrset, to enforce the order.
+        # This lets us put simpler tests first.
+        [
+          {
+            name   = "spaces-are-set-up";
+            script = ''
+              CODE=0
+              FOUND=$(yabai -m query --spaces | jq 'length')
+              if [[ "$FOUND" -ne ${count} ]]
+              then
+                ${error "Should have ${count} spaces, actually have $COUNT"}
+                CODE=1
+              fi
+
+              for L in ${unwords labels}
+              do
+                FOUND=$(yabai -m query --spaces |
+                        jq --arg l "$L" 'map(select(.label == $l)) | length')
+                if [[ "$FOUND" -ne 1 ]]
+                then
+                  ${error "Found $FOUND spaces with label $L"}
+                  CODE=1
+                fi
+              done
+              exit $CODE
+            '';
+          }
+          {
+            name   = "displays-have-spaces";
+            script = ''
+              if ! ${self.plugged-in}
+              then
+                ${info "Only 1 display, skipping test displays-have-spaces"}
+                exit 0
+              fi
+
+              ${self.ensure-displays-have-spaces}
+            '';
+          }
 
       ${self.ensure-displays-have-spaces}
     '';
 
-    test-switch-to = ''
-      CODE=0
-      START=$(${self.current-space})
-      ALL=$(echo -e '${concatStringsSep "\\n" labels}')
-      for REPEAT in $(seq 1 10)
-      do
-        TO=$(echo "$ALL" | shuf | head -n1)
-        ${self.switch-to} "$TO"
-        ON=$(${self.current-space})
-        if ! [[ "x$ON" = "x$TO" ]]
-        then
-          CODE=1
-          echo "error: Tried to switch to '$TO', ended up on '$ON'" 1>&2
-        fi
-      done
-      ${self.switch-to} "$START"
-      exit "$CODE"
+          {
+            name   = "switch-to";
+            script = ''
+              CODE=0
+              START=$(${self.current-space})
+              ALL=$(echo -e '${concatStringsSep "\\n" labels}')
+              for REPEAT in $(seq 1 10)
+              do
+                TO=$(echo "$ALL" | shuf | head -n1)
+                ${self.switch-to} "$TO"
+                ON=$(${self.current-space})
+                if ! [[ "x$ON" = "x$TO" ]]
+                then
+                  ${error "Tried to switch to '$TO', ended up on '$ON'"}
+                  CODE=1
+                fi
+              done
+              ${self.switch-to} "$START"
+              exit "$CODE"
+            '';
+          }
+        ]))}
+
+      ${debug "Finished tests. Restoring spaces."}
+      restore
+
+      if [[ "$CODE" -eq 0 ]]
+      then
+        ${debug "ALL TESTS PASSED"}
+      else
+        ${debug "SOME TESTS FAILED"}
+      fi
+      exit $CODE
     '';
   };
 
