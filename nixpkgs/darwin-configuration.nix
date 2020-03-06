@@ -147,6 +147,9 @@ with {
       '';
     };
 
+    # Make sure shared data is available, e.g. site-lisp for Emacs
+    pathsToLink = [ "/share" ];
+
     # Packages to install globally (i.e. those which should be available to any
     # shell).
     # To see a list of package names to put here, try running:
