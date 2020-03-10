@@ -73,21 +73,21 @@ with rec {
                          conditions = whenUnset leftCommandVar;
                          to         = run "${package}/bin/shortcuts/${cmd}";
                        }) {
-        nextWindow   =        mod "j"              ;
-        prevWindow   =        mod "k"              ;
-        display-prev =        mod "left_arrow"     ;
-        display-next =        mod "right_arrow"    ;
-        toggle-split =        mod "spacebar"       ;
-        close-window = shift (mod "c")             ;
-        make-main    =        mod "return_or_enter";
-        fix-up-emacs =        mod "e"              ;
-        force-rejig  =        mod "r"              ;
-        shrink-vert  =        mod "i"              ;
-        grow-vert    =        mod "o"              ;
-        shrink-horiz =        mod "h"              ;
-        grow-horiz   =        mod "l"              ;
+        nextWindow     =        mod "j"              ;
+        prevWindow     =        mod "k"              ;
         moveWindowNext = shift (mod "j")             ;
         moveWindowPrev = shift (mod "k")             ;
+        display-prev   =        mod "left_arrow"     ;
+        display-next   =        mod "right_arrow"    ;
+        toggle-split   =        mod "spacebar"       ;
+        close-window   = shift (mod "c")             ;
+        make-main      =        mod "return_or_enter";
+        fix-up-emacs   =        mod "e"              ;
+        force-rejig    =        mod "r"              ;
+        shrink-vert    =        mod "i"              ;
+        grow-vert      =        mod "o"              ;
+        shrink-horiz   =        mod "h"              ;
+        grow-horiz     =        mod "l"              ;
       }
       ++
       # Switch spaces with number keys
