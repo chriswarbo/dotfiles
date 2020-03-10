@@ -434,47 +434,8 @@ with rec {
       # This would be nice to put in Yabai's startup config, but doesn't
       # seem to work (maybe only "config" options work there?).
       ${haskellCommands.populateSpaces}
-      LAX=1 ${self.label-spaces}
+      ${haskellCommands.labelSpaces}
       LAX=1 ${self.arrange-spaces}
-    '';
-
-    label-spaces = ''
-      # Spaces are indexed, but that order can change, e.g. when moving
-      # them between displays. We'll use labels instead, since they're
-      # more stable: the labels are "l" followed by the current index.
-      # These labels should be used by our keybindings, rather than the
-      # indices.
-      ${unlines (map (n: with { s = toString n; }; ''
-                       # Skip this label if a space already has it
-                       ${debug "Checking if a space is already labelled l${s}"}
-                       SPACES=$(yabai -m query --spaces)
-                       if echo "$SPACES" |
-                          jq -e 'map(select(.label == "l${s}")) | ${""
-                                 } length | . == 0' > /dev/null
-                       then
-                         ${debug "Labelling space l${s}"}
-                         # Find a space with a dodgy or duplicate label.
-                         # If we're here then it must be the case that:
-                         #  - We've got the right number of spaces
-                         #  - There isn't a space with this label
-                         # This implies that there must be a space with
-                         # no label, or a dodgy label, or a duplicate
-                         # label, which self.find-unlabelled will
-                         # give us
-                         if UL=$(${self.find-unlabelled})
-                         then
-                           ${debug "Found unlabelled spaces for l${s}: $UL"}
-                           yabai -m space "$(echo "$UL" | head -n1)" \
-                                 --label l${s} || true
-                         else
-                           echo "label-spaces: No unlabelled spaces!" 1>&2
-                         fi
-                         SPACES=$(yabai -m query --spaces)
-                       else
-                         ${debug "Space l${s} already exists, nothing to do"}
-                       fi
-                     '')
-                     spaces)}
     '';
 
     # Try to keep our spaces balanced across displays. This way, as we're
@@ -1135,10 +1096,11 @@ with rec {
   haskellCommands = genAttrs [
     "displayNext"
     "displayPrev"
+      "labelSpaces"
     "nextWindow"
     "moveWindowNext"
     "moveWindowPrev"
-    "populateSpaces"
+      "populateSpaces"
     "prevWindow"
   ] haskellShortcut;
 };
