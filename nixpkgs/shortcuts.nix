@@ -7,20 +7,23 @@ with lib;
 with rec {
   # The spaces we're going to use. Always use these variables, instead
   # of hard-coding, to ensure consistency when changing the number.
-  spaces = range 1 9;  # Ignore 0 to avoid off-by-one nonsense
-  count  = toString (length spaces);
-  labels = map (n: "l${toString n}") spaces;
-
+  spaces    = range 1 9;  # Ignore 0 to avoid off-by-one nonsense
+  count     = toString (length spaces);
+  labels    = map (n: "l${toString n}") spaces;
   labelFile = writeScript "workspace-labels" (unlines labels);
 
+  # Concatenate with spaces and newlines
   unlines = concatStringsSep "\n";
   unwords = concatStringsSep " ";
 
+  # Consistent ways to log messages. Set DEBUG=1 for verbose information; errors
+  # and info are always shown; fatal will also abort the current script.
   info  = str: ''echo "info: ${str}" 1>&2'';
   debug = str: ''[[ -z "$DEBUG" ]] || echo "debug: ${str}" 1>&2'';
   error = str: ''echo "error: ${str}" 1>&2'';
   fatal = str: error str + ''; echo "Fatal error, aborting" 1>&2; exit 1'';
 
+  # All of our scripts use bash with stricter error checking
   makeScript = name: script: wrap {
     inherit name;
     script = ''
@@ -30,6 +33,10 @@ with rec {
     '';
   };
 
+  # The commands we'll write out into the resulting package. This is defined as
+  # a function taking a 'self' argument, so scripts can refer to other scripts.
+  # This ensures infinite recursion is caught at build time, and makes sure we
+  # don't mis-spell any of our commands.
   makeCommands = self: mapAttrs makeScript {
     # Common queries
     display-count = "yabai -m query --displays | jq 'length'";
@@ -108,7 +115,7 @@ with rec {
         jq -r --argjson i "$I" 'map(select(.index == $i) | .label) | .[]'
     '';
 
-    # Helper scripts
+    # Store the visible state and restore it again later
 
     store-currently-visible = ''
       # We can fiddle with spaces as much as we like, as long as:
@@ -203,21 +210,9 @@ with rec {
       echo "$DATA" | ${self.restore-focused-space}
     '';
 
-    shift-space-to-index = ''
-      while [[ $(${self.index-of-space} "$1") -gt "$2" ]]
-      do
-        yabai -m space "$1" --move prev
-      done
-      while [[ $(${self.index-of-space} "$1") -lt "$2" ]]
-      do
-        yabai -m space "$1" --move next
-      done
-    '';
-
-    shift-space-to-matching-index = ''
-      I=$(echo "$1" | grep -o '[0-9]*')
-      ${self.shift-space-to-index} "$1" "$I"
-    '';
+    # Switch to displays and spaces. These are flaky, so we retry multiple times
+    # and, if it keeps failing, we do some random switching around in the hope
+    # that it un-sticks itself.
 
     focus-display = ''
       ${self.lax-spaces-are-set-up} focus-display
@@ -311,6 +306,8 @@ with rec {
       exit 0
     '';
 
+    # Move spaces around, between displays and mission control index
+
     move-space-to-display = ''
       # Yabai only seems able to move the active space between displays. This
       # command will switch to the given space, move it to the given display,
@@ -358,7 +355,24 @@ with rec {
       ${debug "Finished moving space $1 to display $2"}
     '';
 
+    shift-space-to-index = ''
+      while [[ $(${self.index-of-space} "$1") -gt "$2" ]]
+      do
+        yabai -m space "$1" --move prev
+      done
+      while [[ $(${self.index-of-space} "$1") -lt "$2" ]]
+      do
+        yabai -m space "$1" --move next
+      done
+    '';
+
+    # Set up our spaces how we want them
+
     find-unlabelled = ''
+      # Spits out the indices of spaces which aren't labelled properly; either
+      # because they're unlabelled, have a label we don't want, or have a
+      # duplicate label
+
       # Assume we didn't find anything
       CODE=1
 
@@ -411,8 +425,10 @@ with rec {
       exit "$CODE"
     '';
 
-    # Destroy spaces if we have too many, create if we don't have enough
     populate-spaces = ''
+      # Destroy spaces if we have too many, create if we don't have enough
+      # TODO: Prefer destroying empty spaces, to reduce window shuffling
+
       ${debug "populate-spaces: Ensuring we have ${count} spaces in total"}
       D=$(${self.current-display})
 
@@ -450,7 +466,6 @@ with rec {
       #
       # This would be nice to put in Yabai's startup config, but doesn't
       # seem to work (maybe only "config" options work there?).
-      # TODO: Prefer destroying empty spaces, to reduce window shuffling
       LAX=1 ${self.populate-spaces}
       LAX=1 ${self.label-spaces}
       LAX=1 ${self.arrange-spaces}
@@ -462,19 +477,15 @@ with rec {
       # more stable: the labels are "l" followed by the current index.
       # These labels should be used by our keybindings, rather than the
       # indices.
-      function info {
-        [[ -z "$DEBUG" ]] || echo "label-spaces: $@" 1>&2
-      }
-
       ${unlines (map (n: with { s = toString n; }; ''
                        # Skip this label if a space already has it
-                       info "Checking if a space is already labelled l${s}"
+                       ${debug "Checking if a space is already labelled l${s}"}
                        SPACES=$(yabai -m query --spaces)
                        if echo "$SPACES" |
                           jq -e 'map(select(.label == "l${s}")) | ${""
                                  } length | . == 0' > /dev/null
                        then
-                         info "Labelling space l${s}"
+                         ${debug "Labelling space l${s}"}
                          # Find a space with a dodgy or duplicate label.
                          # If we're here then it must be the case that:
                          #  - We've got the right number of spaces
@@ -485,7 +496,7 @@ with rec {
                          # give us
                          if UL=$(${self.find-unlabelled})
                          then
-                           info "Found unlabelled spaces for l${s}: $UL"
+                           ${debug "Found unlabelled spaces for l${s}: $UL"}
                            yabai -m space "$(echo "$UL" | head -n1)" \
                                  --label l${s} || true
                          else
@@ -493,25 +504,15 @@ with rec {
                          fi
                          SPACES=$(yabai -m query --spaces)
                        else
-                         info "Space l${s} already exists, nothing to do"
+                         ${debug "Space l${s} already exists, nothing to do"}
                        fi
                      '')
                      spaces)}
     '';
 
-    fix-up-emacs = ''
-      # Force all Emacs windows to be "zoomed", i.e. take up their whole
-      # space. Since Emacs doesn't tile nicely, this at least resizes it
-      # to fit its current display.
-
-      osascript -e 'tell application "Emacs"
-                      repeat with x from 1 to (count windows)
-                        tell window x
-                          set zoomed to true
-                        end tell
-                      end repeat
-                    end tell'
-    '';
+    # Try to keep our spaces balanced across displays. This way, as we're
+    # switching around between spaces, we won't end up trying to move the last
+    # space off a display (which won't work)
 
     force-invisible-displays = ''
       # We want the first half of the spaces on display 1, the second on display
@@ -663,6 +664,20 @@ with rec {
       #pkill yabai || true
       #sleep 2
       ${self.fix-up-spaces}
+    '';
+
+    fix-up-emacs = ''
+      # Force all Emacs windows to be "zoomed", i.e. take up their whole
+      # space. Since Emacs doesn't tile nicely, this at least resizes it
+      # to fit its current display.
+
+      osascript -e 'tell application "Emacs"
+                      repeat with x from 1 to (count windows)
+                        tell window x
+                          set zoomed to true
+                        end tell
+                      end repeat
+                    end tell'
     '';
 
     # Tile/float the focused window

@@ -1,3 +1,4 @@
+# Generates a JSON config file for Karabiner Elements
 { lib, shortcuts }:
 
 with builtins;
