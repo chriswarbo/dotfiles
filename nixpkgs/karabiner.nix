@@ -75,8 +75,6 @@ with rec {
                        }) {
         nextWindow   =        mod "j"              ;
         prevWindow   =        mod "k"              ;
-        move-next    = shift (mod "j")             ;
-        move-prev    = shift (mod "k")             ;
         display-prev =        mod "left_arrow"     ;
         display-next =        mod "right_arrow"    ;
         toggle-split =        mod "spacebar"       ;
@@ -88,6 +86,8 @@ with rec {
         grow-vert    =        mod "o"              ;
         shrink-horiz =        mod "h"              ;
         grow-horiz   =        mod "l"              ;
+        moveWindowNext = shift (mod "j")             ;
+        moveWindowPrev = shift (mod "k")             ;
       }
       ++
       # Switch spaces with number keys

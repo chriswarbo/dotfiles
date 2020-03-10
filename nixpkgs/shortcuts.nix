@@ -831,10 +831,6 @@ with rec {
     close-window = ''yabai -m window  --close       '';
     make-main    = ''yabai -m window  --swap   west '';
     toggle-split = ''yabai -m window  --toggle split'';
-    move-next    = ''yabai -m window  --swap   next ||
-                     yabai -m window  --swap   first'';
-    move-prev    = ''yabai -m window  --swap   prev ||
-                     yabai -m window  --swap   last '';
     display-prev = ''yabai -m display --focus  prev ||
                      yabai -m display --focus  last '';
     display-next = ''yabai -m display --focus  next ||
@@ -1174,6 +1170,8 @@ with rec {
 
   haskellCommands = genAttrs [
     "nextWindow"
+    "moveWindowNext"
+    "moveWindowPrev"
     "prevWindow"
   ] haskellShortcut;
 };
