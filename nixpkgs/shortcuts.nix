@@ -1159,6 +1159,7 @@ with rec {
       #!/usr/bin/env bash
       set -e
       cp "${./Yabai.hs}" Yabai.hs
+      sed -e 's/LABELS_GO_HERE/${toJSON labels}/g' -i Yabai.hs
       cp "$main" Main.hs
       ghc --make Main.hs -o "$out"
     '';
