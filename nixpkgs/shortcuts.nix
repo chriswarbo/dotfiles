@@ -272,8 +272,8 @@ with rec {
 
         if [[ $(( COUNT % 10 )) -eq 9 ]]
         then
-          ${self.display-prev}; sleep 0.2
-          ${self.display-next}; sleep 0.2
+          ${haskellCommands.displayPrev}; sleep 0.2
+          ${haskellCommands.displayNext}; sleep 0.2
         fi
 
         if [[ $(( COUNT % 15 )) -eq 4 ]]
@@ -438,7 +438,7 @@ with rec {
         if [[ $(yabai -m query --spaces --display | jq 'length') -eq 1 ]]
         then
           ${debug "populate-spaces: Switching display to avoid underpopulation"}
-          ${self.display-next}
+          ${haskellCommands.displayNext}
         fi
         ${debug "populate-spaces: Destroying a space"}
         yabai -m space --destroy
@@ -831,10 +831,6 @@ with rec {
     close-window = ''yabai -m window  --close       '';
     make-main    = ''yabai -m window  --swap   west '';
     toggle-split = ''yabai -m window  --toggle split'';
-    display-prev = ''yabai -m display --focus  prev ||
-                     yabai -m display --focus  last '';
-    display-next = ''yabai -m display --focus  next ||
-                     yabai -m display --focus  first'';
 
     pick-existing-space = ''
       yabai -m query --spaces | jq -r 'map(.label) | .[]' |
@@ -1169,6 +1165,8 @@ with rec {
   };
 
   haskellCommands = genAttrs [
+    "displayNext"
+    "displayPrev"
     "nextWindow"
     "moveWindowNext"
     "moveWindowPrev"

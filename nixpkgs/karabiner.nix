@@ -77,8 +77,8 @@ with rec {
         prevWindow     =        mod "k"              ;
         moveWindowNext = shift (mod "j")             ;
         moveWindowPrev = shift (mod "k")             ;
-        display-prev   =        mod "left_arrow"     ;
-        display-next   =        mod "right_arrow"    ;
+        displayNext    =        mod "right_arrow"    ;
+        displayPrev    =        mod "left_arrow"     ;
         toggle-split   =        mod "spacebar"       ;
         close-window   = shift (mod "c")             ;
         make-main      =        mod "return_or_enter";
