@@ -1,6 +1,6 @@
 # Commands to invoke when we press hot keys. These are mostly for controlling
 # the Yabai window manager.
-{ attrsToDirs', lib, wrap, writeScript }:
+{ attrsToDirs', haskellPackages, lib, run, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -1152,6 +1152,29 @@ with rec {
 
   # Tie the knot, so 'self' works
   commands = makeCommands commands;
+
+  haskellShortcut = n: run {
+    name  = "haskell-shortcut-${n}";
+    paths = [
+      (haskellPackages.ghcWithPackages (h: [
+        h.aeson h.polysemy h.process-extras
+      ]))
+    ];
+    vars = {
+      main = writeScript "haskell-shortcut-${n}.hs" ''
+        module Main where
+        import Yabai
+        main = mkMain ${n}
+      '';
+    };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+      cp "${./Yabai.hs}" Yabai.hs
+      cp "$main" Main.hs
+      ghc --make Main.hs -o "$out"
+    '';
+  };
 };
 {
   inherit commands spaces;
