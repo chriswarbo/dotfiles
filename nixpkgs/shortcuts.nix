@@ -425,39 +425,6 @@ with rec {
       exit "$CODE"
     '';
 
-    populate-spaces = ''
-      # Destroy spaces if we have too many, create if we don't have enough
-      # TODO: Prefer destroying empty spaces, to reduce window shuffling
-
-      ${debug "populate-spaces: Ensuring we have ${count} spaces in total"}
-      D=$(${self.current-display})
-
-      while [[ $(yabai -m query --spaces | jq 'length') -gt ${count} ]]
-      do
-        ${debug "populate-spaces: Too many spaces, need to destroy some"}
-        if [[ $(yabai -m query --spaces --display | jq 'length') -eq 1 ]]
-        then
-          ${debug "populate-spaces: Switching display to avoid underpopulation"}
-          ${haskellCommands.displayNext}
-        fi
-        ${debug "populate-spaces: Destroying a space"}
-        yabai -m space --destroy
-      done
-      unset D
-
-      while [[ $(yabai -m query --spaces | jq 'length') -lt ${count} ]]
-      do
-        ${debug "populate-spaces: Need to create more spaces"}
-        yabai -m space --create || true
-      done
-
-      C=$(yabai -m query --spaces | jq 'length')
-      if [[ "$C" -ne ${count} ]]
-      then
-        ${fatal "populate-spaces: Need ${count} spaces, ended up with $C"}
-      fi
-    '';
-
     fix-up-spaces = ''
       # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
       #  - We want a fixed number of spaces (destroy/create to enforce this)
@@ -466,7 +433,7 @@ with rec {
       #
       # This would be nice to put in Yabai's startup config, but doesn't
       # seem to work (maybe only "config" options work there?).
-      LAX=1 ${self.populate-spaces}
+      ${haskellCommands.populateSpaces}
       LAX=1 ${self.label-spaces}
       LAX=1 ${self.arrange-spaces}
     '';
@@ -1171,6 +1138,7 @@ with rec {
     "nextWindow"
     "moveWindowNext"
     "moveWindowPrev"
+    "populateSpaces"
     "prevWindow"
   ] haskellShortcut;
 };
