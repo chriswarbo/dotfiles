@@ -73,8 +73,8 @@ with rec {
                          conditions = whenUnset leftCommandVar;
                          to         = run "${package}/bin/shortcuts/${cmd}";
                        }) {
-        next-window  =        mod "j"              ;
-        prev-window  =        mod "k"              ;
+        nextWindow   =        mod "j"              ;
+        prevWindow   =        mod "k"              ;
         move-next    = shift (mod "j")             ;
         move-prev    = shift (mod "k")             ;
         display-prev =        mod "left_arrow"     ;

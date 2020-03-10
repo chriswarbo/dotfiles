@@ -831,10 +831,6 @@ with rec {
     close-window = ''yabai -m window  --close       '';
     make-main    = ''yabai -m window  --swap   west '';
     toggle-split = ''yabai -m window  --toggle split'';
-    next-window  = ''yabai -m window  --focus  next ||
-                     yabai -m window  --focus  first'';
-    prev-window  = ''yabai -m window  --focus  prev ||
-                     yabai -m window  --focus  last '';
     move-next    = ''yabai -m window  --swap   next ||
                      yabai -m window  --swap   first'';
     move-prev    = ''yabai -m window  --swap   prev ||
@@ -1151,7 +1147,7 @@ with rec {
   };
 
   # Tie the knot, so 'self' works
-  commands = makeCommands commands;
+  shellCommands = makeCommands shellCommands;
 
   haskellShortcut = n: run {
     name  = "haskell-shortcut-${n}";
@@ -1175,9 +1171,15 @@ with rec {
       ghc --make Main.hs -o "$out"
     '';
   };
+
+  haskellCommands = genAttrs [
+    "nextWindow"
+    "prevWindow"
+  ] haskellShortcut;
 };
-{
-  inherit commands spaces;
+rec {
+  inherit spaces;
+  commands = shellCommands // haskellCommands;
 
   # Make the commands available as a package, so we can invoke them manually
   package = attrsToDirs' "shortcuts" {
