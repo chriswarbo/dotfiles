@@ -1,6 +1,6 @@
 # Commands to invoke when we press hot keys. These are mostly for controlling
 # the Yabai window manager.
-{ attrsToDirs', haskellPackages, lib, run, wrap, writeScript }:
+{ attrsToDirs', haskellPackages, lib, run, withDeps, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -1069,29 +1069,45 @@ with rec {
   # Tie the knot, so 'self' works
   shellCommands = makeCommands shellCommands;
 
-  haskellShortcut = n: run {
-    name  = "haskell-shortcut-${n}";
-    paths = [
-      (haskellPackages.ghcWithPackages (h: [
+  haskellShortcut =
+    with rec {
+      deps = extra: haskellPackages.ghcWithPackages (h: [
         h.aeson h.polysemy h.process-extras
-      ]))
-    ];
-    vars = {
-      main = writeScript "haskell-shortcut-${n}.hs" ''
+      ] ++ map (p: getAttr p h) extra);
+
+      mkScript = name: writeScript "haskell-shortcut-${name}.hs" ''
         module Main where
         import Yabai
-        main = mkMain ${n}
+        main = mkMain ${name}
       '';
+
+      compile = extra: n: main: run {
+        name   = "haskell-shortcut-${n}";
+        paths  = [ (deps extra) ];
+        vars   = { inherit main; };
+        script = ''
+          #!/usr/bin/env bash
+          set -e
+          cp "${./Yabai.hs}" Yabai.hs
+          sed -e 's/LABELS_GO_HERE/${toJSON labels}/g' -i Yabai.hs
+          cp "$main" Main.hs
+          ghc --make Main.hs -o "$out"
+        '';
+      };
+
+      tests = run {
+        name   = "YabaiTests";
+        vars   = {
+          tests = compile
+            [ "QuickCheck" "tasty" "tasty-quickcheck" ]
+            "tests"
+            ./YabaiTests.hs;
+        };
+        script = ''"$tests" && mkdir "$out"'';
+      };
     };
-    script = ''
-      #!/usr/bin/env bash
-      set -e
-      cp "${./Yabai.hs}" Yabai.hs
-      sed -e 's/LABELS_GO_HERE/${toJSON labels}/g' -i Yabai.hs
-      cp "$main" Main.hs
-      ghc --make Main.hs -o "$out"
-    '';
-  };
+    name: withDeps [ tests ]
+                   (compile [] name (mkScript name));
 
   haskellCommands = genAttrs [
     "displayNext"

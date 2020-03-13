@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Thu, 12 Mar 2020 08:58:16 +0000
-State: new
+State: resolved
 Subject: Add QuickCheck tests for Yabai.hs
 Message-Id: <bac03b2373332bdd-0-artemis@chriss-mbp.lan>
+resolution: fixed
 
 These should run during the build, as a dependency of shortcuts.package
