@@ -1,0 +1,7 @@
+From: Chris Warburton
+Date: Thu, 12 Mar 2020 09:55:49 +0000
+State: new
+Subject: Use QuickCheck to stress-test Yabai.hs
+Message-Id: <c9d297627f128f8d-0-artemis@chriss-mbp.lan>
+
+Ensure our desired setup is robust against an onslaught of actions.

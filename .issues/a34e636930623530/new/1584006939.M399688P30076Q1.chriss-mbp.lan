@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Thu, 12 Mar 2020 09:54:21 +0000
+State: new
+Subject: Encapsulate Haskell helpers once their users are Haskell
+Message-Id: <a34e636930623530-0-artemis@chriss-mbp.lan>
+
+We're exposing some Haskell commands in shortcuts.nix which should ideally be
+internal helpers, rather than actual commands. Once we've ported their users
+from bash into Haskell, we can stop exposing them.

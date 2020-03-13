@@ -1,0 +1,7 @@
+From: Chris Warburton
+Date: Thu, 12 Mar 2020 09:53:27 +0000
+State: new
+Subject: Port more complicated shortcuts (and helpers) to Yabai.hs
+Message-Id: <98fa79a2a6c84d19-0-artemis@chriss-mbp.lan>
+
+Bash one-liners can stay (e.g. close window), AppleScript can stay.
