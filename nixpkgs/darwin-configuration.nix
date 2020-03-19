@@ -199,6 +199,8 @@ with {
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
 
+        cmus  # Useful at home
+
         shortcuts.package  # Commands used by our keyboard shortcuts
 
         # AWS helper
