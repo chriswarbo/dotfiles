@@ -263,12 +263,12 @@ with {
 
         (installApplication rec {
           name       = "Postman";
-          version    = "7.18.0";
+          version    = "7.20.1";
           sourceRoot = "Postman.app";
           src        = fetchurl {
             name   = "postman-${version}.zip";
             url    = "https://dl.pstmn.io/download/version/${version}/osx64";
-            sha256 = "18bn3bfy2rnbzblhs6mvca20l90m7138qnkwwg17x9ydqrnfcvmf";
+            sha256 = "06yziywjs0jxmax2j5bx5imhs54alplrqv6mk04wqw0r5hwbmvzd";
           };
           description = "GUI for testing HTTP requests and responses";
           homepage    = https://www.getpostman.com;
