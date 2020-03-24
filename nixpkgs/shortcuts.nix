@@ -39,14 +39,7 @@ with rec {
   # don't mis-spell any of our commands.
   makeCommands = self: mapAttrs makeScript {
     # Common queries
-    display-count = "yabai -m query --displays | jq 'length'";
-
-    plugged-in = "[[ $(${self.display-count}) -gt 1 ]]";
-
-    current-display = ''
-      yabai -m query --spaces |
-        jq 'map(select(.focused == 1)) | .[] | .display'
-    '';
+    plugged-in = "[[ $(${haskellCommands.displayCount}) -gt 1 ]]";
 
     display-of-space = ''
       yabai -m query --spaces |
@@ -79,11 +72,6 @@ with rec {
         > /dev/null
     '';
 
-    current-space = ''
-      yabai -m query --spaces |
-        jq -r 'map(select(.focused | . == 1)) | .[] | .label'
-    '';
-
     space-is-visible = ''
       yabai -m query --spaces |
         jq -e --arg l "$1" 'map(select(.label == $l)) | .[] | .visible == 1' \
@@ -101,11 +89,6 @@ with rec {
     space-index-matches = ''
       N=$(${self.number-from-label} "$1")
       ${self.space-has-index} "$1" "$N"
-    '';
-
-    current-window = ''
-      yabai -m query --windows |
-        jq -r 'map(select(.focused == 1)) | .[] | .id'
     '';
 
     space-of-window = ''
@@ -134,8 +117,8 @@ with rec {
                  jq 'map(select(.visible == 1) |${""
                          } {"key": .label, "value": .display}) | from_entries')
 
-      FOCUSED_DISPLAY=$(${self.current-display})
-      FOCUSED_SPACE=$(${self.current-space} | jq -R '.')
+      FOCUSED_DISPLAY=$(${haskellCommands.currentDisplay})
+      FOCUSED_SPACE=$(${haskellCommands.currentSpace})
 
       jq -n --argjson visible  "$VISIBLE"         \
             --argjson displays "$DISPLAYS"        \
@@ -167,11 +150,11 @@ with rec {
 
       # Switch to that space's display, if we're not currently there
       D=$(${self.display-of-space} "$L")
-      [[ "$(${self.current-display})" -eq "$D" ]] ||
+      [[ "$(${haskellCommands.currentDisplay})" -eq "$D" ]] ||
         yabai -m display --focus "$D"
 
       # Ensure the previously focused space is currently focused
-      [[ "$(${self.current-space})"   -eq "$L" ]] ||
+      [[ "$(${haskellCommands.currentSpace})"   -eq "$L" ]] ||
         yabai -m space   --focus "$L"
     '';
 
@@ -219,9 +202,9 @@ with rec {
 
       ${debug "focus-display: Focusing $1"}
       COUNT=0
-      while [[ $(${self.current-display}) -ne $1 ]]
+      while [[ $(${haskellCommands.currentDisplay}) -ne $1 ]]
       do
-        ${debug "focus-display: On display $(${self.current-display})"}
+        ${debug "focus-display: On display $(${haskellCommands.currentDisplay})"}
         if [[ "$COUNT" -gt 10 ]]
         then
           ${fatal "focus-display: Failed to switch to display $1"}
@@ -237,7 +220,7 @@ with rec {
         COUNT=$(( COUNT + 1 ))
       done
 
-      D=$(${self.current-display})
+      D=$(${haskellCommands.currentDisplay})
       if [[ "$D" -eq "$1" ]]
       then
         ${debug "focus-display: Switched focus to display $1"}
@@ -255,7 +238,7 @@ with rec {
         ${fatal "focus-space: Asked to focus space $1, which doesn't exist"}
       fi
 
-      S1=$(${self.current-space})
+      S1=$(${haskellCommands.currentSpace})
       ${debug "focus-space: We're on space $S1, asked to focus $1"}
 
       # Focus the display of the given space
@@ -263,7 +246,7 @@ with rec {
 
       # Focus the given space, if it's not already
       COUNT=0
-      while ! [[ "x$(${self.current-space})" = "x$1" ]]
+      while ! [[ "x$(${haskellCommands.currentSpace})" = "x$1" ]]
       do
         if [[ "$COUNT" -gt 30 ]]
         then
@@ -290,13 +273,13 @@ with rec {
           sleep 0.2
         fi
 
-        ${debug "focus-space: $(${self.current-space}) focused; focusing $1"}
+        ${debug "focus-space: $(${haskellCommands.currentSpace}) focused; focusing $1"}
         yabai -m space --focus "$1"
         sleep 0.2
         COUNT=$(( COUNT + 1 ))
       done
 
-      S3=$(${self.current-space})
+      S3=$(${haskellCommands.currentSpace})
       if [[ "x$S3" = "x$1" ]]
       then
         ${debug "focus-space: Successfully focused space $1"}
@@ -329,7 +312,7 @@ with rec {
       ${debug "Making sure $1 is focused"}
       ${self.focus-space} "$1"
 
-      C=$(${self.current-space})
+      C=$(${haskellCommands.currentSpace})
       if [[ "x$C" = "x$1" ]]
       then
         ${debug "Focused space $1, as we expected"}
@@ -750,7 +733,7 @@ with rec {
     switch-to = ''
       ${self.maybe-fix-spaces}
       ${self.arrange-spaces}
-      D=$(${self.current-display})
+      D=$(${haskellCommands.currentDisplay})
       ${self.move-space-to-display} "$1" "$D"
       yabai -m space --focus "$1"
     '';
@@ -834,13 +817,13 @@ with rec {
               do
                 L=$(${self.pick-existing-space})
                 ${self.focus-space} "$L"
-                ON=$(${self.current-space})
+                ON=$(${haskellCommands.currentSpace})
                 if [[ "x$ON" = "x$L" ]]
                 then
                   ${debug "Focused space $L successfully"}
                 else
                   D=$(${self.display-of-space} "$L")
-                  D2=$(${self.current-display})
+                  D2=$(${haskellCommands.currentDisplay})
                   ${fatal "Failed to focus space $L ($D); we're on $ON ($D2)"}
                 fi
               done
@@ -889,7 +872,7 @@ with rec {
               # Move as much as possible on to display 2
               while read -r L
               do
-                if [[ "x$(${self.current-space})" = "x$L" ]]
+                if [[ "x$(${haskellCommands.currentSpace})" = "x$L" ]]
                 then
                   ${debug "Not moving space $L to display 2, since it's focused"}
                   continue
@@ -982,10 +965,10 @@ with rec {
             script = ''
               CODE=0
 
-              CWINDOW=$(${self.current-window})
+              CWINDOW=$(${haskellCommands.currentWindow})
                CSPACE=$(${self.space-of-window} "$CWINDOW")
               ${debug "Focused on window $CWINDOW on space $CSPACE"}
-              C=$(${self.current-space})
+              C=$(${haskellCommands.currentSpace})
               if ! [[ "x$CSPACE" = "x$C" ]]
               then
                 ${fatal "current-space gave $C, space-of-window gave $CSPACE"}
@@ -998,7 +981,7 @@ with rec {
               ${debug "Focusing space of window $W"}
               FROM=$(${self.space-of-window} "$W")
               ${self.focus-space} "$FROM"
-              ON=$(${self.current-space})
+              ON=$(${haskellCommands.currentSpace})
               if [[ "x$ON" = "x$FROM" ]]
               then
                 ${debug "We switched to space $ON, for window $W, as expected"}
@@ -1009,7 +992,7 @@ with rec {
               yabai -m window --focus "$W"
               ${self.move-window} "$TO"
 
-              OURSPACE=$(${self.current-space})
+              OURSPACE=$(${haskellCommands.currentSpace})
               if [[ "x$OURSPACE" = "x$FROM" ]]
               then
                 ${debug "Moving windows doesn't change our space, as expected"}
@@ -1034,13 +1017,13 @@ with rec {
             name   = "switch-to";
             script = ''
               CODE=0
-              START=$(${self.current-space})
+              START=$(${haskellCommands.currentSpace})
               ALL=$(echo -e '${concatStringsSep "\\n" labels}')
               for REPEAT in $(seq 1 10)
               do
                 TO=$(echo "$ALL" | shuf | head -n1)
                 ${self.switch-to} "$TO"
-                ON=$(${self.current-space})
+                ON=$(${haskellCommands.currentSpace})
                 if ! [[ "x$ON" = "x$TO" ]]
                 then
                   ${error "Tried to switch to '$TO', ended up on '$ON'"}
@@ -1106,17 +1089,21 @@ with rec {
         script = ''"$tests" && mkdir "$out"'';
       };
     };
-    name: withDeps [ tests ]
+    name: withDeps [ /*tests*/ ]
                    (compile [] name (mkScript name));
 
   haskellCommands = genAttrs [
+    "currentDisplay"
+    "currentSpace"
+    "currentWindow"
+    "displayCount"
     "displayNext"
     "displayPrev"
-      "labelSpaces"
+    "labelSpaces"
     "nextWindow"
     "moveWindowNext"
     "moveWindowPrev"
-      "populateSpaces"
+    "populateSpaces"
     "prevWindow"
   ] haskellShortcut;
 };
