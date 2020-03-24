@@ -122,6 +122,25 @@ with {
         inherit (pkgs) lib shortcuts;
       });
 
+      # macOS uses /etc/paths to set the PATH env var in many situations (e.g.
+      # in graphical Emacs instances). We want Nix paths to appear first, not be
+      # appended at the end. This is especially annoying since macOS comes with
+      # lots of dummy commands like 'git' and 'python3' which just show an
+      # obnoxious popup, short-circuiting their lookup in later directories. The
+      # read-only filesystem prevents us from deleting them too. Grrr...
+      paths.text = ''
+        /Users/chris/.nix-profile/bin
+        /nix/var/nix/profiles/default/bin
+        /Users/chris/.nix-profile/bin
+        /run/current-system/sw/bin
+        /nix/var/nix/profiles/default/bin
+        /usr/local/bin
+        /usr/bin
+        /bin
+        /usr/sbin
+        /sbin
+      '';
+
       "ssh/ssh_config".text = ''
         # We want access to warbo@github.com and chriswarbo@github.com, but
         # GitHub don't let us specify the username: it's always git@github.com,
