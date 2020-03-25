@@ -219,7 +219,6 @@ with {
         direnv  # Needed by lorri
         xquartz
 
-
         cmus  # Useful at home
 
         shortcuts.package  # Commands used by our keyboard shortcuts
@@ -299,12 +298,13 @@ with {
 
         (installApplication rec {
           name       = "Slack";
-          version    = "4.3.3";
+          version    = "4.4.1";
           sourceRoot = "Slack.app";
           src        = fetchurl {
             name   = "slack-${version}.zip";
-            url    = "https://downloads.slack-edge.com/mac_releases/Slack-${version}-macOS.zip";
-            sha256 = "0d60cdd4ad6550ee863414dfd37ed119549306b8943a1e17594615803d2add1a";
+            url    = "https://downloads.slack-edge.com/mac_releases" +
+                     "/Slack-${version}-macOS.zip";
+            sha256 = "18lwwigl8pxv65p22dif2pq12077zh0jk838pc82g2q48cwa99ng";
           };
           description = "Desktop client for Slack messenger";
           homepage    = https://www.slack.com;
