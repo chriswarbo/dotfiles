@@ -561,6 +561,7 @@ with {
 
   system = {
     activationScripts.extraUserActivation.text = ''
+      echo "Pointing Karabiner to /etc/static/karabiner" 1>&2
       D="$HOME"/.config/karabiner
       if [[ -e "$D" ]]
       then
@@ -575,6 +576,20 @@ with {
       else
         ln -sv /etc/static/karabiner "$D"
       fi
+      unset D
+
+      echo "Populating Applications folder for dock" 1>&2
+      D="$HOME"/.local/share/Applications
+      [[ -d "$D" ]] || mkdir -p "$D"
+      find "$D" -maxdepth 1 -type l | while read -r F
+      do
+        rm "$F"
+      done
+      for APP in "$HOME"/Applications/*
+      do
+        ln -s "$APP" "$D"/
+      done
+      unset D
     '';
 
     defaults = {
