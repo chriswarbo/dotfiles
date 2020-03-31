@@ -215,6 +215,8 @@ with {
         artemisWrapper
         docker  # FIXME: Do we actually need this command in the global env?
 
+        (callPackage ./displayplacer.nix {})
+
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
         xquartz
