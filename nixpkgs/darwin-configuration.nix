@@ -219,7 +219,6 @@ with {
 
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
-        xquartz
 
         cmus  # Useful at home
 
