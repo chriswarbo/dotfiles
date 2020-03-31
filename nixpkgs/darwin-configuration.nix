@@ -561,7 +561,7 @@ with {
   };
 
   system = {
-    activationScripts.extraUserActivation.text = ''
+    activationScripts.postActivation.text = ''
       echo "Pointing Karabiner to /etc/static/karabiner" 1>&2
       D="$HOME"/.config/karabiner
       if [[ -e "$D" ]]
