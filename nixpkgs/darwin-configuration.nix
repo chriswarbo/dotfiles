@@ -231,6 +231,7 @@ with {
           script = with { unlines = concatStringsSep "\n"; }; ''
             #!/usr/bin/env bash
             set -e
+            cd "$HOME"
 
             if [ $# -lt 1 ]
             then
