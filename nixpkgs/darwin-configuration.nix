@@ -534,6 +534,11 @@ with {
         #if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]; then
           . /nix/store/5r56ykssv4wrnh5pdl1vdpjn27xfs8wg-set-environment
         #fi
+
+        # Ignore zsh's multi-line editing; we have Emacs for that, and it screws
+        # up data without a trailing newline
+        setopt nopromptcr
+        setopt nozle
       '';
       loginShellInit = ''
         # Taken from default macOS /etc/zprofile 2020-02-17 so that darwin-nix
