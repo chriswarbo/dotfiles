@@ -219,6 +219,7 @@ with {
 
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
+        gnumeric
 
         cmus  # Useful at home
 
@@ -471,6 +472,23 @@ with {
               ];
               sha256 = "0vfz99xi0mn3v7jzghd7f49j3x3b24xmd1gcxhdgwkjnjlm614mf";
             })
+          ];
+        });
+
+        itstool = self.mkBin {
+          name   = "itstool";
+          script = ''
+            #!/usr/bin/env bash
+            CMD=$(head -n1 < "${super.itstool}"/bin/itstool |
+                  cut -d ' ' -f1 | sed -e 's@#!@@g')
+            "$CMD" -s "${super.itstool}"/bin/itstool "$@"
+          '';
+        };
+
+        # Prevent build error when ApplicationServices isn't found
+        lasem = super.lasem.overrideAttrs (old: {
+          buildInputs = (old.buildInputs or []) ++ [
+            self.darwin.apple_sdk.frameworks.ApplicationServices
           ];
         });
 
