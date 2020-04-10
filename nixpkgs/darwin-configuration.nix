@@ -538,7 +538,6 @@ with {
         # Ignore zsh's multi-line editing; we have Emacs for that, and it screws
         # up data without a trailing newline
         setopt nopromptcr
-        setopt nozle
       '';
       loginShellInit = ''
         # Taken from default macOS /etc/zprofile 2020-02-17 so that darwin-nix
