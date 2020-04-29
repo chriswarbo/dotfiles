@@ -98,101 +98,6 @@ with rec {
         jq -r --argjson i "$I" 'map(select(.index == $i) | .label) | .[]'
     '';
 
-    # Store the visible state and restore it again later
-
-    store-currently-visible = ''
-      # We can fiddle with spaces as much as we like, as long as:
-      #  - The 'visible' space on each display remains on the same display
-      #  - The 'visible' space on each display remains visible
-      #  - The 'focused' display remains focused
-      #  - The 'focused' space remains focused
-      #
-      # This script dumps out all of that information to stdout, so it can be
-      # restored by other scripts (selectively, since the whole point of our
-      # scripts is that they change some things)
-      VISIBLE=$(yabai -m query --spaces |
-                jq 'map(select(.visible == 1) | .label)')
-
-      DISPLAYS=$(yabai -m query --spaces |
-                 jq 'map(select(.visible == 1) |${""
-                         } {"key": .label, "value": .display}) | from_entries')
-
-      FOCUSED_DISPLAY=$(${haskellCommands.currentDisplay})
-      FOCUSED_SPACE=$(${haskellCommands.currentSpace})
-
-      jq -n --argjson visible  "$VISIBLE"         \
-            --argjson displays "$DISPLAYS"        \
-            --argjson fdisplay "$FOCUSED_DISPLAY" \
-            --argjson fspace   "$FOCUSED_SPACE"   \
-            '{"visible": {"spaces": $visible, "displays": $displays}, ${""
-             }"focused": {"space" : $fspace,  "display" : $fdisplay}}'
-    '';
-
-    restore-visible-to-displays = ''
-      # Reads in the output of self.store-currently-visible and puts the
-      # previously visible spaces back on their original displays
-      DATA=$(cat)
-      echo "$DATA" | jq -r '.visible | .spaces | .[]' | while read -r L
-      do
-        D=$(echo "$DATA" | jq --arg l "$L" '.visible | .displays | .[$l]')
-        ${debug "Putting previously-visible space $L back on display $D"}
-        ${self.move-space-to-display} "$L" "$D"
-      done
-    '';
-
-    restore-focused-space = ''
-      # Reads in the output of self.store-currently-visible and tries to focus
-      # the previously-focused space; on whichever display it is currently on.
-
-      # Get the label of the space we need to focus
-      DATA=$(cat)
-      L=$(echo "$DATA" | jq -r '.focused | .space')
-
-      # Switch to that space's display, if we're not currently there
-      D=$(${self.display-of-space} "$L")
-      [[ "$(${haskellCommands.currentDisplay})" -eq "$D" ]] ||
-        yabai -m display --focus "$D"
-
-      # Ensure the previously focused space is currently focused
-      [[ "$(${haskellCommands.currentSpace})"   -eq "$L" ]] ||
-        yabai -m space   --focus "$L"
-    '';
-
-    restore-visible-spaces = ''
-      # Reads in the output of self.store-currently-visible and tries to ensure
-      # that the previously visible spaces are still visible. Note that this
-      # might not be possible, if some have been moved to the same display. In
-      # these cases we prefer to display the previously-focused space.
-      #
-      # If you want these spaces back on the same display as well, use
-      # self.restore-visible-to-displays first, then this.
-
-      # Focus each of the previously-visible spaces:
-      #  1) If they've not changed displays, then we will get one per display,
-      #     as before.
-      #  2) If their displays have changed, but there's still one per display,
-      #     then they'll all be visible (but on different displays than before)
-      #  3) If they've moved on to the same display then only one of them will
-      #     become visible (arbitrarily), whilst the other display will continue
-      #     to show whatever it had before this script started.
-      DATA=$(cat)
-      echo "$DATA" | jq -r '.visible | .spaces | .[]' | while read -r L
-      do
-        ${self.focus-space} "$L"
-      done
-
-      # We now focus the originally-focused display. We only do this such that
-      # in scenario (3) we'll definitely end up with the previously-focused
-      # space being visible (otherwise we might get a different
-      # previously-visible which happens to now be on the same display).
-      #
-      # This doesn't affect visibility in the other two scenarios, so we don't
-      # care. The focus may change, but this script makes no guarantees about
-      # that anyway, so it's fine (i.e. if you want a particular space to be
-      # focused after running this script, you need to do that yourself)
-      echo "$DATA" | ${self.restore-focused-space}
-    '';
-
     # Switch to displays and spaces. These are flaky, so we retry multiple times
     # and, if it keeps failing, we do some random switching around in the hope
     # that it un-sticks itself.
@@ -202,23 +107,9 @@ with rec {
 
       ${debug "focus-display: Focusing $1"}
       COUNT=0
-      while [[ $(${haskellCommands.currentDisplay}) -ne $1 ]]
-      do
-        ${debug "focus-display: On display $(${haskellCommands.currentDisplay})"}
-        if [[ "$COUNT" -gt 10 ]]
-        then
-          ${fatal "focus-display: Failed to switch to display $1"}
-        fi
-
-        if [[ "$COUNT" -lt 4 ]]
-        then
-          yabai -m display --focus "$1"
-        else
-          yabai -m display --focus next
-        fi
-        sleep 0.2
-        COUNT=$(( COUNT + 1 ))
-      done
+      [[ $(${haskellCommands.currentDisplay}) -eq $1 ]] ||
+         ${haskellCommands.displayNext}
+      sleep 0.2
 
       D=$(${haskellCommands.currentDisplay})
       if [[ "$D" -eq "$1" ]]
@@ -306,9 +197,6 @@ with rec {
       fi
       ${debug "Space $1 has display $D, we need to move it to $2"}
 
-      ${debug "Storing currently visible and focused spaces"}
-      ORIGINAL=$(${self.store-currently-visible})
-
       ${debug "Making sure $1 is focused"}
       ${self.focus-space} "$1"
 
@@ -322,7 +210,7 @@ with rec {
       unset C
 
       ${debug "Sending space $1 to display $2"}
-      yabai -m space --display "$2"
+      yabai -m space --display "$2"; sleep 0.5
 
       D=$(${self.display-of-space} "$1")
       if [[ "$D" -eq "$2" ]]
@@ -331,11 +219,7 @@ with rec {
       else
         ${fatal "Space $1 was meant to get display $2, actually has $D"}
       fi
-
-      ${debug "Restoring visible and focused spaces"  }
-      echo "$ORIGINAL" | ${self.restore-visible-spaces}
-      echo "$ORIGINAL" | ${self.restore-focused-space }
-      ${debug "Finished moving space $1 to display $2"}
+      true
     '';
 
     shift-space-to-index = ''
@@ -406,19 +290,6 @@ with rec {
         ${error "Didn't find any unlabelled spaces; do we have enough?"}
       fi
       exit "$CODE"
-    '';
-
-    fix-up-spaces = ''
-      # Re-jigs our displays/spaces/etc. to work like XMonad. Specifically:
-      #  - We want a fixed number of spaces (destroy/create to enforce this)
-      #  - "Switch to space N" should bring that space to the focused
-      #    display, rather than changing which display is focused.
-      #
-      # This would be nice to put in Yabai's startup config, but doesn't
-      # seem to work (maybe only "config" options work there?).
-      ${haskellCommands.populateSpaces}
-      ${haskellCommands.labelSpaces}
-      LAX=1 ${self.arrange-spaces}
     '';
 
     # Try to keep our spaces balanced across displays. This way, as we're
@@ -547,35 +418,8 @@ with rec {
       exit 0
     '';
 
-    arrange-spaces = ''
-      # To minimise disruption if/when Yabai dies, we can use this script to
-      # arrange spaces in order of their labels. This way, relabelling them
-      # should result in no changes, and hence no need to move windows into the
-      # space where we expect them.
-
-      # macOS numbers spaces on one display then another, and so on.
-      # This means that, for example, l1 will be out of order if it's on
-      # display 2; since whatever space(s) is on display 1 will come
-      # first. The same applies to the last space having to be on the
-      # highest-numbered display.
-
-      ORIGINAL=$(${self.store-currently-visible})
-
-      ${self.force-invisible-displays}
-      ${self.force-indices}
-
-      echo "$ORIGINAL" | ${self.restore-visible-spaces}
-    '';
-
     # General commands
     #"${       mod "f"    }" = "yabai -m window --toggle zoom-parent";
-
-    force-rejig = ''
-      ${self.arrange-spaces}
-      #pkill yabai || true
-      #sleep 2
-      ${self.fix-up-spaces}
-    '';
 
     fix-up-emacs = ''
       # Force all Emacs windows to be "zoomed", i.e. take up their whole
@@ -641,16 +485,6 @@ with rec {
         ${fatal "$1: Spaces aren't set up"}
       fi
       exit 0
-    '';
-
-    # If our spaces aren't labelled, something is up
-    maybe-fix-spaces = ''
-      if ! ${self.spaces-are-set-up}
-      then
-        echo "Fixing up spaces first" 1>&2
-        ${self.fix-up-spaces}
-      fi
-      true
     '';
 
     # Picks a display with more than 2 spaces (guaranteed since we have
@@ -731,17 +565,18 @@ with rec {
     # Switch to the space with the given label. Make sure it exists first, and
     # bring it to the current display if it isn't already.
     switch-to = ''
-      ${self.maybe-fix-spaces}
-      ${self.arrange-spaces}
-      D=$(${haskellCommands.currentDisplay})
-      ${self.move-space-to-display} "$1" "$D"
-      yabai -m space --focus "$1"
+      LABEL="$1" ${haskellCommands.focusHereEnv}
     '';
 
-    move-window  = ''yabai -m window  --space  "$1" '';
-    close-window = ''yabai -m window  --close       '';
-    make-main    = ''yabai -m window  --swap   west '';
-    toggle-split = ''yabai -m window  --toggle split'';
+    move-window  = ''
+      D=$(${haskellCommands.currentDisplay})
+      yabai -m window  --space "$1"; sleep 0.1
+      yabai -m display --focus "$D"
+    '';
+
+    close-window = ''yabai -m window --close       '';
+    make-main    = ''yabai -m window --swap   west '';
+    toggle-split = ''yabai -m window --toggle split'';
 
     pick-existing-space = ''
       yabai -m query --spaces | jq -r 'map(.label) | .[]' |
@@ -759,13 +594,6 @@ with rec {
     run-tests = ''
       CODE=0
 
-      function restore {
-        ${debug "Restoring space layout after tests"}
-        echo "$ORIGINAL" | ${self.restore-visible-to-displays}
-        echo "$ORIGINAL" | ${self.restore-visible-spaces}
-        echo "$ORIGINAL" | ${self.restore-focused-space}
-      }
-
       function go {
         ${debug "RUNNING: $1"}
         if "$2"
@@ -775,12 +603,9 @@ with rec {
           CODE=1
           ${error "FAIL: $1"}
         fi
-        restore
       }
 
-      ${self.fix-up-spaces}
-      ${debug "Storing space layout"}
-      ORIGINAL=$(${self.store-currently-visible})
+      ${haskellCommands.labelSpaces}
 
       ${debug "Running tests"}
       ${unlines (map ({name, script}: ''
@@ -858,70 +683,6 @@ with rec {
                     fi
                   done
               done
-            '';
-          }
-          {
-            name   = "arrange-spaces";
-            script = ''
-              if ! ${self.plugged-in}
-              then
-                ${info "Only 1 display, skipping test arrange-spaces"}
-                exit 0
-              fi
-
-              # Move as much as possible on to display 2
-              while read -r L
-              do
-                if [[ "x$(${haskellCommands.currentSpace})" = "x$L" ]]
-                then
-                  ${debug "Not moving space $L to display 2, since it's focused"}
-                  continue
-                fi
-
-                if [[ "$(${self.display-of-space} "$L")" -eq 2 ]]
-                then
-                  ${debug "Not moving space $L to display 2, since it's there already"}
-                  continue
-                fi
-
-                SPACESON1=$(yabai -m query --displays |
-                            jq 'map(select(.index == 1)) | .[] | .spaces | length')
-                if [[ "$SPACESON1" -gt 1 ]]
-                then
-                  ${debug "Display 1 has $SPACESON1 spaces, moving one to display 2"}
-                else
-                  ${debug "Display 1 has $SPACESON1 spaces, not moving another"}
-                  continue
-                fi
-
-                ${self.move-space-to-display} "$L" 2
-                ON=$(${self.display-of-space} "$L")
-                if [[ "$ON" -ne 2 ]]
-                then
-                  ${fatal "Moved $L to display 2, it's on display $ON; aborting"}
-                else
-                  ${debug "Moved $L to display 2, it's now on display $ON"}
-                fi
-              done < ${labelFile}
-
-              ${debug "About to arrange spaces"}
-              ${self.arrange-spaces}
-
-              COUNTS=$(yabai -m query --displays | jq 'map(.spaces | length | sort)')
-              if [[ "x$COUNTS" = "x${with rec {
-                                       l = length spaces;
-                                       x = l / 2;
-                                       y = l - x;
-                                     };
-                                     toJSON [x y]}" ]]
-              then
-                ${debug "Spaces are distributed roughly evenly $COUNTS, as expected"}
-              else
-                ${error "Expected even distribution of spaces, got $COUNTS"}
-                CODE=1
-              fi
-
-              exit $CODE
             '';
           }
           {
@@ -1104,7 +865,6 @@ with rec {
     "nextWindow"
     "moveWindowNext"
     "moveWindowPrev"
-    "populateSpaces"
     "prevWindow"
   ] haskellShortcut;
 };

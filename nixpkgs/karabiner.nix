@@ -83,7 +83,7 @@ with rec {
         close-window   = shift (mod "c")             ;
         make-main      =        mod "return_or_enter";
         fix-up-emacs   =        mod "e"              ;
-        force-rejig    =        mod "r"              ;
+        labelSpaces    =        mod "r"              ;
         shrink-vert    =        mod "i"              ;
         grow-vert      =        mod "o"              ;
         shrink-horiz   =        mod "h"              ;
