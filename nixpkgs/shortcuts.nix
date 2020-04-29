@@ -1082,7 +1082,7 @@ with rec {
         name   = "YabaiTests";
         vars   = {
           tests = compile
-            [ "QuickCheck" "tasty" "tasty-quickcheck" ]
+            [ "lens" "QuickCheck" "tasty" "tasty-quickcheck" ]
             "tests"
             ./YabaiTests.hs;
         };
@@ -1099,6 +1099,7 @@ with rec {
     "displayCount"
     "displayNext"
     "displayPrev"
+    "focusHereEnv"
     "labelSpaces"
     "nextWindow"
     "moveWindowNext"
