@@ -312,6 +312,20 @@ with {
           description = "Desktop client for Slack messenger";
           homepage    = https://www.slack.com;
         })
+
+        (installApplication rec {
+          name       = "VNCViewer";
+          version    = "6.20.113";
+          sourceRoot = "VNC Viewer.app";
+          src        = fetchurl {
+            name   = "real-vnc-viewer-${version}.dmg";
+            url    = "https://www.realvnc.com/download/file/viewer.files/" +
+                     "VNC-Viewer-${version}-MacOSX-x86_64.dmg";
+            sha256 = "d6035174e9e4aa2e281b49abc953b75c915a1eca9173d56140ddfa3c129197dd";
+          };
+          description = "RealVNC client";
+          homepage    = https://www.realvnc.com;
+        })
     ];
 
     variables = {
