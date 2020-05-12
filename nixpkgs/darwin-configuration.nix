@@ -274,13 +274,13 @@ with {
 
         (installApplication rec {
           name       = "Firefox";
-          version    = "75.0";
+          version    = "76.0.1";
           sourceRoot = "Firefox.app";
           src        = fetchurl {
             name   = "firefox-${version}.dmg";
             url    = "https://ftp.mozilla.org/pub/firefox/releases/" +
                      version + "/mac-EME-free/en-GB/Firefox%20${version}.dmg";
-            sha256 = "1y76wjy5am784m4cjci80bhqv8535n1xi604yb47xmahick1pnw4";
+            sha256 = "1xsi5r4dvdvsg4g8915f86k2zg4nz1pgpzq25dx4y0g44a3rnyh9";
           };
           description = "Firefox browser";
           homepage    = https://www.getfirefox.com;
