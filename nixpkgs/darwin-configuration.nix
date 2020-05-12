@@ -506,6 +506,11 @@ with {
           ];
         });
 
+        nix_release = super.nix_release.override (old: {
+          # Use system-wide Nix instead of attempting to use tunnel on macOS
+          withNix = x: { buildInputs = []; } // x;
+        });
+
         # Scripts to bind to hotkeys
         shortcuts = self.callPackage ./shortcuts.nix {};
 
