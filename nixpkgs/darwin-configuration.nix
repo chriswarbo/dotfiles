@@ -301,13 +301,13 @@ with {
 
         (installApplication rec {
           name       = "Slack";
-          version    = "4.5.0";
+          version    = "4.6.0";
           sourceRoot = "Slack.app";
           src        = fetchurl {
             name   = "slack-${version}.zip";
             url    = "https://downloads.slack-edge.com/mac_releases" +
                      "/Slack-${version}-macOS.zip";
-            sha256 = "00al32kgdgx5cvkkhprp4miam2g7iwn0b525v5rryzvhb8ma01rl";
+            sha256 = "15hppw4b2snx2fanprvk8vm5l8kfl9x4p5aqnlvqbiwbbkk890hv";
           };
           description = "Desktop client for Slack messenger";
           homepage    = https://www.slack.com;
