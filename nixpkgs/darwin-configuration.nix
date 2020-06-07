@@ -141,6 +141,10 @@ with {
         /sbin
       '';
 
+      "sbt/sbtopts".text = ''
+        -Dsbt.supershell=false
+      '';
+
       "ssh/ssh_config".text = ''
         # We want access to warbo@github.com and chriswarbo@github.com, but
         # GitHub don't let us specify the username: it's always git@github.com,
