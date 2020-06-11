@@ -586,20 +586,6 @@ with {
     activate-system.enable = true;
     nix-daemon.enable      = true;
 
-    # Provides keyboard shortcuts (AKA hotkeys)
-    # TODO: Turn into a module and add to imports instead
-    #skhd = import ./skhd.nix {
-    #  inherit (pkgs)
-    #    fetchFromGitHub
-    #    foldAttrs'
-    #    lib
-    #    merge
-    #    prefixFlatten
-    #    skhd
-    #    wrap
-    #    ;
-    #};
-
     # Tiling window manager
     # TODO: Turn yabai.nix into a module and add to imports instead
     yabai = import ./yabai.nix {
