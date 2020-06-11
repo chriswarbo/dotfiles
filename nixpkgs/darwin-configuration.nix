@@ -457,7 +457,12 @@ with {
   };
 
   nixpkgs = {
-    config.allowUnfree = true;
+    config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "p7zip-16.02"
+      ];
+    };
 
     # NOTE: Overlays can add/change attributes in the 'pkgs' set, so they can't
     # depend on anything inside 'pkgs' (e.g. pkgs.fetchgit); otherwise we get an
