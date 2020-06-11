@@ -223,7 +223,7 @@ with {
 
         lorri   # Needed by lorri launchd service defined below
         direnv  # Needed by lorri
-        gnumeric
+        #gnumeric
 
         cmus  # Useful at home
 
