@@ -7,9 +7,12 @@
 # Also note that Yabai is controlled by sending it commands, both as "config"
 # and for interaction; we define a shell script here for the former, and set up
 # keybindings for the latter in skhd.nix
-{ config, foldAttrs', wrap }:
-with rec {
-  options = {
+{ config, pkgs }:
+{
+  enable                  = true;
+  enableScriptingAddition = true;
+  package                 = pkgs.yabai;
+  config                  = {
     # global settings
     active_window_border_color   = "0xff5c7e81";
     active_window_border_topmost = "off";
@@ -43,20 +46,4 @@ with rec {
       left_padding = "0";
      right_padding = "0";
   };
-
-  addConfig = name: value: result: result + ''
-    yabai -m config "${name}" "${value}"
-  '';
-};
-{
-  enable                  = true;
-  enableScriptingAddition = true;
-  configPath              = "${wrap {
-    name   = "yabairc";
-    paths  = [ config.services.yabai.package ];
-    script = ''
-      ${foldAttrs' addConfig "" options}
-      echo "yabai configuration loaded..."
-    '';
-  }}";
 }

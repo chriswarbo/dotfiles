@@ -7,17 +7,8 @@ with {
     url    = https://github.com/cmacrae/.nixpkgs.git;
     rev    = "d4b51eb414b0edaffaeee9b926c32b118014c4fa";
   };
-  cmacraeConfig = fetchGit {
-    url    = https://github.com/cmacrae/config.git;
-    rev    = "99a8680b61c605b031c3c1bb9838476db5cb5977";
-  };
 };
 {
-  # Extra modules, each is a function from { config, pkgs, ... } like this one
-  imports = [
-    "${cmacraeConfig}/modules/yabai.nix"
-  ];
-
   environment = {
     darwinConfig = toString <home/.nixpkgs/darwin-configuration.nix>;
 
@@ -593,14 +584,7 @@ with {
     nix-daemon.enable      = true;
 
     # Tiling window manager
-    # TODO: Turn yabai.nix into a module and add to imports instead
-    yabai = import ./yabai.nix {
-      inherit config;
-      inherit (pkgs)
-        foldAttrs'
-        wrap
-        ;
-    };
+    yabai = import ./yabai.nix { inherit config pkgs; };
   };
 
   system = {
