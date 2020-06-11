@@ -440,15 +440,21 @@ with {
     # write them out manually the first time, e.g.
     #     NIX_PATH="$NIX_PATH:home=$HOME:..." darwin-rebuild switch
     # From then on it should work without problems.
-    nixPath = [
-       #"darwin-config=$HOME/.nixpkgs/darwin-configuration.nix"
-              "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
-                "home=$HOME"
-          "nix-config=$HOME/repos/nix-config"
-         "nix-helpers=$HOME/repos/nix-helpers"
-             "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs"
-      "warbo-packages=$HOME/repos/warbo-packages"
-    ];
+    nixPath =
+      with {
+        combine = name: path: rest: [ "${name}=${path}" ] ++ rest;
+        github  = owner: repo: branch:
+          "https://github.com/${owner}/${repo}/archive/${branch}.tar.gz";
+        repo    = repo: "$HOME/repos/" + repo;
+      };
+      pkgs.foldAttrs' combine [] {
+                darwin = github "LnL7" "nix-darwin" "master";
+                  home = "$HOME";
+            nix-config = repo "nix-config";
+           nix-helpers = repo "nix-helpers";
+               nixpkgs = github "nixos" "nixpkgs" "nixpkgs-unstable";
+        warbo-packages = repo "warbo-packages";
+      };
 
     extraOptions = ''
       # Set by default by multi-user Nix installer
