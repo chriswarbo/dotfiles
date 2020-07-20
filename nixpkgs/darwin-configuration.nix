@@ -282,6 +282,20 @@ with {
         })
 
         (installApplication rec {
+          name       = "iTerm2";
+          version    = "3.3.12";
+          sourceRoot = "iTerm.app";
+          src        = fetchurl {
+            name   = "iTerm2-${version}.zip";
+            url    = "https://iterm2.com/downloads/stable/iTerm2-" +
+                     (replaceStrings ["."] ["_"] version) + ".zip";
+            sha256 = "0rw165p9iypc11pr0mmwd1z4dvg0f3is2p8bv2sk30wyd4hba4b8";
+          };
+          description = "Terminal emulator";
+          homepage    = https://iterm2.com;
+        })
+
+        (installApplication rec {
           name       = "Postman";
           version    = "7.20.1";
           sourceRoot = "Postman.app";
