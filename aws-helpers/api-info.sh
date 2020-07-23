@@ -20,16 +20,19 @@ function resources {
     DOMAINS=$(echo "$DATA" | get 'AWS::ApiGateway::DomainName'  )
     APIKEYS=$(echo "$DATA" | get 'AWS::ApiGateway::ApiKey'      )
     USGKEYS=$(echo "$DATA" | get 'AWS::ApiGateway::UsagePlanKey')
+    RESTAPI=$(echo "$DATA" | get 'AWS::ApiGateway::RestApi'     )
 
     jq -n                           \
        --argjson domains "$DOMAINS" \
        --argjson apikeys "$APIKEYS" \
        --argjson usgkeys "$USGKEYS" \
+       --argjson restapi "$RESTAPI" \
        --arg     stack   "$1"       \
        '{($stack): {
-          "domains": $domains,
-          "apikeys": $apikeys,
-          "usgkeys": $usgkeys
+          "domains"  : $domains,
+          "apikeys"  : $apikeys,
+          "usagekeys": $usgkeys,
+          "restapis" : $restapi
        }}'
 }
 
