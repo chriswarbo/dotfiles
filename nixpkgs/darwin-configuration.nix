@@ -220,50 +220,7 @@ with {
 
         shortcuts.package  # Commands used by our keyboard shortcuts
 
-        # AWS helper
-        (mkBin rec {
-          name   = "aws-login";
-          paths  = [ bash awscli ];
-          script = with { unlines = concatStringsSep "\n"; }; ''
-            #!/usr/bin/env bash
-            set -e
-            cd "$HOME"
-
-            if [ $# -lt 1 ]
-            then
-              echo "${name}: Log in to AWS CLI session, using MFA token" 1>&2
-              echo "Example: ${name} 123456" 1>&2
-              exit 2
-            fi
-
-            export AWS_PROFILE=prod
-
-            MFA_SERIAL_NUMBER=$(aws iam list-mfa-devices                \
-                                    --query 'MFADevices[].SerialNumber' \
-                                    --output text)
-
-            QUERY='Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
-            DATA=$(aws sts get-session-token              \
-                     --serial-number "$MFA_SERIAL_NUMBER" \
-                     --query         "$QUERY"             \
-                     --output        text                 \
-                     --token-code    "$1")
-
-            ${with { data = i: ''$(echo "$DATA" | cut -f${toString i})''; };
-              unlines (mapAttrsToList
-                (var: val: ''
-                  VAL="${val}"
-                  aws configure set "${var}" "$VAL" --profile=mfa
-                  echo export ${toUpper var}="$VAL"
-                '')
-                {
-                  aws_access_key_id     = data 1;
-                  aws_secret_access_key = data 2;
-                  aws_session_token     = data 3;
-                  region                = "eu-west-2";
-                })}
-          '';
-        })
+        (callPackage ../aws-helpers {}).combined
 
         # GUI macOS applications
 
