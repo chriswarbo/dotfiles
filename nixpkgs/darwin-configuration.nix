@@ -365,7 +365,7 @@ with {
     # will check whether paths we refer to actually exist. For example if we use
     # the path <home/ssh/config> then Nix will abort evaluation if it doesn't
     # exist; this is usually preferable to using strings like
-    # (<home> + ".ssh/config") which will be evaluated without error, only to
+    # (<home> + "/.ssh/config") which will be evaluated without error, only to
     # cause "file not found" problems later on (in a builder if we're lucky; if
     # we're not it could get written to scripts or config files which we only
     # notice when running them at some arbitrary point in the future!)
@@ -392,7 +392,7 @@ with {
     #    downloader's config we want it to save things into <home/Downloads>,
     #    not into some snapshot of that directory (also, we can't save into an
     #    immutable filesystem!). In these cases we should send the path through
-    #    to 'builtins.toString' function, e.g.
+    #    the 'builtins.toString' function, e.g.
     #        { destination = builtins.toString <home/Downloads>; }
 
     # NOTE: Relying on these paths causes a bootstrapping problem: our config
