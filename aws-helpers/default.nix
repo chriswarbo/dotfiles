@@ -19,6 +19,12 @@ rec {
     file  = ./login.sh;
   };
 
+  run-healthcheck = mkBin {
+    name  = "run-healthcheck";
+    paths = [ bash awscli jq ];
+    file  = ./run-healthcheck.sh;
+  };
+
   combined = buildEnv {
     name  = "aws-helpers";
     paths = [ api-info healthcheck login ];
