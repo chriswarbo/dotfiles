@@ -41,12 +41,12 @@ then
     for stack in "$@"
     do
         resources "$stack"
-        sleep 1
+        sleep 0.1
     done
 else
     for stack in $(stacks)
     do
         resources "$stack"
-        sleep 1
+        sleep 0.1
     done
 fi
