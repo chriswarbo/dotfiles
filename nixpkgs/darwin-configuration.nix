@@ -220,7 +220,7 @@ with {
 
         shortcuts.package  # Commands used by our keyboard shortcuts
 
-        (callPackage ../aws-helpers {}).combined
+        (callPackage <dotfiles/aws-helpers> {}).combined
 
         # GUI macOS applications
 
@@ -411,6 +411,7 @@ with {
       };
       pkgs.foldAttrs' combine [] {
                 darwin = github "LnL7" "nix-darwin" "master";
+              dotfiles = repo "dotfiles";
                   home = "$HOME";
             nix-config = repo "nix-config";
            nix-helpers = repo "nix-helpers";
