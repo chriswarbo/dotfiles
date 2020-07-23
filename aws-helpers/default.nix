@@ -1,10 +1,5 @@
 { awscli, bash, buildEnv, jq, lib, mkBin }:
 
-with {
-  inherit (lib)
-    concatStringsSep
-  ;
-};
 rec {
   login = mkBin rec {
     name  = "aws-login";
