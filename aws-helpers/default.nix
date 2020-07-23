@@ -9,7 +9,7 @@ rec {
 
   healthcheck = mkBin {
     name  = "healthcheck";
-    paths = [ api-info bash awscli jq ];
+    paths = [ api-info awscli bash jq run-healthcheck ];
     file  = ./healthcheck.sh;
   };
 

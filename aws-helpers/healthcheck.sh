@@ -2,46 +2,36 @@
 set -e
 set -o pipefail
 
+CODE=0
+
 function check {
-    aws apigateway get-resources --rest-api-id "$1" |
-        findHealthchecks                            |
-        while read -r resource
-        do
-            RESULT=$(aws apigateway         \
-                         test-invoke-method \
-                         --http-method GET  \
-                         --rest-api-id "$1" \
-                         --resource-id "$resource")
-            if [[ -n "$RAW" ]]
-            then
-                echo "$RESULT"
-                echo "---"
-                echo "$RESULT" | jq -r '.body' | jq '.'
-                echo "---"
-                echo "$RESULT" | jq -r '.log'
-            else
-                echo "$RESULT" | jq -r '.body' | jq '.'
-            fi
-            echo "$RESULT" | jq -e '.status == 200' > /dev/null
-        done
-}
-
-function findHealthchecks {
-    jq -r '.items | map(select(.path | contains("healthcheck")) | .id) | .[]'
-}
-
-function getApi {
-    api-info "$1" | jq -r --arg name "$1" '.[$name] | .restapis | .[0]'
+    run-healthcheck "$1" || {
+        echo "Stack $stack gave non-200 response" 1>&2
+        CODE=1
+    }
 }
 
 if [[ "$#" -gt 0 ]]
 then
-    stacks="$@"
+    for stack in "$@"
+    do
+        apiid=$(api-info "$1" |
+                jq -r --arg name "$1" '.[$name] | .restapis | .[0]')
+        check "$apiid"
+    done
 else
-    stacks=( ProjCrowdingService ProjAuthService )
+    echo "Fetching list of stacks to check" 1>&2
+    api-info |
+        jq -c 'map_values(.restapis[0]) |
+               to_entries[0]            |
+               select(.value != null)'  |
+        while read -r ENTRY
+        do
+            stack=$(echo "$ENTRY" | jq -r '.key'  )
+            apiid=$(echo "$ENTRY" | jq -r '.value')
+            echo "Checking stack $stack with REST API $apiid" 1>&2
+            check "$apiid"
+        done
 fi
 
-for stack in "${stacks[@]}"
-do
-    check "$(getApi "$stack")"
-done
+exit "$CODE"
