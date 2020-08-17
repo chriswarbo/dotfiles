@@ -225,70 +225,46 @@ with {
         # GUI macOS applications
 
         (installApplication rec {
-          name       = "Firefox";
-          version    = "78.0.2";
-          sourceRoot = "Firefox.app";
-          src        = fetchurl {
-            name   = "firefox-${version}.dmg";
-            url    = "https://ftp.mozilla.org/pub/firefox/releases/" +
-                     version + "/mac-EME-free/en-GB/Firefox%20${version}.dmg";
-            sha256 = "1l1b6m1i9hya4awsp6pwkjlpbpk2mnlcpnmll45dxb8qcc2dn6gx";
-          };
+          inherit (sources.firefox) version;
+          name        = "Firefox";
+          sourceRoot  = "Firefox.app";
+          src         = sources.firefox.outPath;
           description = "Firefox browser";
           homepage    = https://www.getfirefox.com;
         })
 
         (installApplication rec {
-          name       = "iTerm2";
-          version    = "3.3.12";
-          sourceRoot = "iTerm.app";
-          src        = fetchurl {
-            name   = "iTerm2-${version}.zip";
-            url    = "https://iterm2.com/downloads/stable/iTerm2-" +
-                     (replaceStrings ["."] ["_"] version) + ".zip";
-            sha256 = "0rw165p9iypc11pr0mmwd1z4dvg0f3is2p8bv2sk30wyd4hba4b8";
-          };
+          name        = "iTerm2";
+          version     = replaceStrings ["_"] ["."] sources.iterm2.version;
+          sourceRoot  = "iTerm.app";
+          src         = sources.iterm2.outPath;
           description = "Terminal emulator";
           homepage    = https://iterm2.com;
         })
 
         (installApplication rec {
-          name       = "Postman";
-          version    = "7.20.1";
-          sourceRoot = "Postman.app";
-          src        = fetchurl {
-            name   = "postman-${version}.zip";
-            url    = "https://dl.pstmn.io/download/version/${version}/osx64";
-            sha256 = "06yziywjs0jxmax2j5bx5imhs54alplrqv6mk04wqw0r5hwbmvzd";
-          };
+          inherit (sources.postman) version;
+          name        = "Postman";
+          sourceRoot  = "Postman.app";
+          src         = sources.postman.outPath;
           description = "GUI for testing HTTP requests and responses";
           homepage    = https://www.getpostman.com;
         })
 
         (installApplication rec {
-          name       = "Slack";
-          version    = "4.8.0";
-          sourceRoot = "Slack.app";
-          src        = fetchurl {
-            name   = "slack-${version}.zip";
-            url    = "https://downloads.slack-edge.com/releases/macos/" +
-                     version + "/prod/x64/Slack-${version}-macOS.zip";
-            sha256 = "1kfy68z6acxlawki5plrvayjggay9d0v81v8wb72zkdnsbd3aj1m";
-          };
+          inherit (sources.slack) version;
+          name        = "Slack";
+          sourceRoot  = "Slack.app";
+          src         = sources.slack.outPath;
           description = "Desktop client for Slack messenger";
           homepage    = https://www.slack.com;
         })
 
         (installApplication rec {
-          name       = "VNCViewer";
-          version    = "6.20.113";
-          sourceRoot = "VNC Viewer.app";
-          src        = fetchurl {
-            name   = "real-vnc-viewer-${version}.dmg";
-            url    = "https://www.realvnc.com/download/file/viewer.files/" +
-                     "VNC-Viewer-${version}-MacOSX-x86_64.dmg";
-            sha256 = "d6035174e9e4aa2e281b49abc953b75c915a1eca9173d56140ddfa3c129197dd";
-          };
+          inherit (sources.vncviewer) version;
+          name        = "VNCViewer";
+          sourceRoot  = "VNC Viewer.app";
+          src         = sources.vncviewer.outPath;
           description = "RealVNC client";
           homepage    = https://www.realvnc.com;
         })

@@ -1,4 +1,18 @@
 {
+    "firefox": {
+        "sha256": "1l1b6m1i9hya4awsp6pwkjlpbpk2mnlcpnmll45dxb8qcc2dn6gx",
+        "type": "file",
+        "url": "https://ftp.mozilla.org/pub/firefox/releases/78.0.2/mac-EME-free/en-GB/Firefox%2078.0.2.dmg",
+        "url_template": "https://ftp.mozilla.org/pub/firefox/releases/<version>/mac-EME-free/en-GB/Firefox%20<version>.dmg",
+        "version": "78.0.2"
+    },
+    "iterm2": {
+        "sha256": "0rw165p9iypc11pr0mmwd1z4dvg0f3is2p8bv2sk30wyd4hba4b8",
+        "type": "file",
+        "url": "https://iterm2.com/downloads/stable/iTerm2-3_3_12.zip",
+        "url_template": "https://iterm2.com/downloads/stable/iTerm2-<version>.zip",
+        "version": "3_3_12"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",
@@ -58,6 +72,27 @@
         "type": "tarball",
         "url": "https://github.com/NixOS/nixpkgs/archive/fe9938ebd41dd486ca16a874a3bb9d4f2f4083aa.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "postman": {
+        "sha256": "06yziywjs0jxmax2j5bx5imhs54alplrqv6mk04wqw0r5hwbmvzd",
+        "type": "file",
+        "url": "https://dl.pstmn.io/download/version/7.20.1/osx64",
+        "url_template": "https://dl.pstmn.io/download/version/<version>/osx64",
+        "version": "7.20.1"
+    },
+    "slack": {
+        "sha256": "1kfy68z6acxlawki5plrvayjggay9d0v81v8wb72zkdnsbd3aj1m",
+        "type": "file",
+        "url": "https://downloads.slack-edge.com/releases/macos/4.8.0/prod/x64/Slack-4.8.0-macOS.zip",
+        "url_template": "https://downloads.slack-edge.com/releases/macos/<version>/prod/x64/Slack-<version>-macOS.zip",
+        "version": "4.8.0"
+    },
+    "vncviewer": {
+        "sha256": "1pcpj493rynx81hxawwir8g5m4awnx9wkas93cl2xap4x5s520yn",
+        "type": "file",
+        "url": "https://www.realvnc.com/download/file/viewer.files/VNC-Viewer-6.20.113-MacOSX-x86_64.dmg",
+        "url_template": "https://www.realvnc.com/download/file/viewer.files/VNC-Viewer-<version>-MacOSX-x86_64.dmg",
+        "version": "6.20.113"
     },
     "warbo-packages": {
         "branch": "master",
