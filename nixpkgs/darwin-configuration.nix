@@ -360,64 +360,7 @@ with {
     maxJobs    = 24;
     buildCores = 12;
 
-    # These entries can be used as <foo> or <foo/bar.txt> within Nix. We should
-    # always try to use paths like these in Nix rather than strings, since Nix
-    # will check whether paths we refer to actually exist. For example if we use
-    # the path <home/ssh/config> then Nix will abort evaluation if it doesn't
-    # exist; this is usually preferable to using strings like
-    # (<home> + "/.ssh/config") which will be evaluated without error, only to
-    # cause "file not found" problems later on (in a builder if we're lucky; if
-    # we're not it could get written to scripts or config files which we only
-    # notice when running them at some arbitrary point in the future!)
-
-    # NOTE: Paths are used in two different ways, depending on the behaviour we
-    # want:
-    #  - Sometimes we want to take a snapshot of the files we reference. For
-    #    example, we might use libraries like <nix-helpers> or read options from
-    #    <home/.config/foo>. If these paths get hard-coded into our builders,
-    #    binaries, etc. then the .drv files will give different results whenever
-    #    we update/alter those configs. For example, if a working package gets
-    #    garbage collected, we might never be able to rebuild it again; even if
-    #    we still have the .drv file!
-    #    To avoid this we should add a snapshot of these paths to the Nix store,
-    #    so that everything we reference is immutable. This is what Nix will do
-    #    by default if we use a path as a string, e.g.
-    #        "ls ${<nix-helpers>}"
-    #        builtins.toJSON [ <nix-helpers> ]
-    #        runCommand "foo" { helpers = <nix-helpers>; } "bar"
-    #    Be careful that your snapshots aren't too big! For example, don't keep
-    #    adding snapshots of your entire home directory just to reference a
-    #    single file!
-    #  - Other times we want a path to appear literally, e.g. if we're writing a
-    #    downloader's config we want it to save things into <home/Downloads>,
-    #    not into some snapshot of that directory (also, we can't save into an
-    #    immutable filesystem!). In these cases we should send the path through
-    #    the 'builtins.toString' function, e.g.
-    #        { destination = builtins.toString <home/Downloads>; }
-
-    # NOTE: Relying on these paths causes a bootstrapping problem: our config
-    # depends on these paths, but these paths are made available by our config.
-    # The first time we try to activate this config we'll get an error ("file
-    # foo was not found in the Nix search path"); to break this cycle we need to
-    # write them out manually the first time, e.g.
-    #     NIX_PATH="$NIX_PATH:home=$HOME:..." darwin-rebuild switch
-    # From then on it should work without problems.
-    nixPath =
-      with {
-        combine = name: path: rest: [ "${name}=${path}" ] ++ rest;
-        github  = owner: repo: branch:
-          "https://github.com/${owner}/${repo}/archive/${branch}.tar.gz";
-        repo    = repo: "$HOME/repos/" + repo;
-      };
-      pkgs.foldAttrs' combine [] {
-                darwin = github "LnL7" "nix-darwin" "master";
-              dotfiles = repo "dotfiles";
-                  home = "$HOME";
-            nix-config = repo "nix-config";
-           nix-helpers = repo "nix-helpers";
-               nixpkgs = github "nixos" "nixpkgs" "nixpkgs-unstable";
-        warbo-packages = repo "warbo-packages";
-      };
+    nixPath = (import ./nixPath.nix).list;
 
     extraOptions = ''
       # Set by default by multi-user Nix installer
@@ -436,7 +379,9 @@ with {
     # NOTE: Overlays can add/change attributes in the 'pkgs' set, so they can't
     # depend on anything inside 'pkgs' (e.g. pkgs.fetchgit); otherwise we get an
     # infinite loop
-    overlays           = [
+    overlays = [
+      (_: super: { sources = import ./nix/sources.nix; })
+
       # Useful Nix functions, used by the following overlays
       (import <nix-helpers/overlay.nix>)
 
