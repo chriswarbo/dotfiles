@@ -6,11 +6,13 @@ let
   # The fetchers. fetch_<type> fetches specs of type <type>.
   #
 
+  # FIXME: We added the non-standard 'name' option for firefox's DMG file
   fetch_file = pkgs: spec:
+    with { name = if spec ? name then { inherit (spec) name; } else {}; };
     if spec.builtin or true then
-      builtins_fetchurl { inherit (spec) url sha256; }
+      builtins_fetchurl ({ inherit (spec) url sha256; } // name)
     else
-      pkgs.fetchurl { inherit (spec) url sha256; };
+      pkgs.fetchurl ({ inherit (spec) url sha256; } // name);
 
   fetch_tarball = pkgs: name: spec:
     let
@@ -111,7 +113,7 @@ let
         fetchTarball attrs;
 
   # fetchurl version that is compatible between all the versions of Nix
-  builtins_fetchurl = { url, sha256 }@attrs:
+  builtins_fetchurl = { url, sha256, ... }@attrs:
     let
       inherit (builtins) lessThan nixVersion fetchurl;
     in
