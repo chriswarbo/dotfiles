@@ -267,13 +267,13 @@ with {
 
         (installApplication rec {
           name       = "Slack";
-          version    = "4.7.0";
+          version    = "4.8.0";
           sourceRoot = "Slack.app";
           src        = fetchurl {
             name   = "slack-${version}.zip";
             url    = "https://downloads.slack-edge.com/releases/macos/" +
                      version + "/prod/x64/Slack-${version}-macOS.zip";
-            sha256 = "00rlzlgjdl1r06ac643mjpa0gh62zmglzdq26jyl9i02k5y6s2a8";
+            sha256 = "1kfy68z6acxlawki5plrvayjggay9d0v81v8wb72zkdnsbd3aj1m";
           };
           description = "Desktop client for Slack messenger";
           homepage    = https://www.slack.com;
