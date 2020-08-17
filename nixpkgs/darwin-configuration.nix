@@ -1,13 +1,6 @@
 { config, pkgs, ... }:
 
-with builtins;
-with {
-  # Grab useful configs from other people
-  cmacraeNixpkgs = fetchGit {
-    url    = https://github.com/cmacrae/.nixpkgs.git;
-    rev    = "d4b51eb414b0edaffaeee9b926c32b118014c4fa";
-  };
-};
+with builtins // { sources = import ./nix/sources.nix; };
 {
   environment = {
     darwinConfig = toString <home/.nixpkgs/darwin-configuration.nix>;
@@ -171,9 +164,9 @@ with {
     # Note that we prefer to bundle things together into "metapackages", so we
     # don't need to maintain long lists of things on different machines.
     systemPackages =
-      with pkgs;
-      with lib;
-      with {
+      with rec {
+        inherit (pkgs) installApplication lib mkBin shortcuts;
+        # inherit (lib);
         # Hacky things and macOS-specific things here, for the time being
         # TODO: Can we do this in a nicer way? (Copypasta from warbo-utilities)
         artemisWrapper = mkBin {
@@ -201,26 +194,26 @@ with {
       };
       [
         # binutils and gcc both provide bin/ld
-        (devCli.overrideAttrs (old: { ignoreCollisions = true; }))
-        devGui
-        docCli
-        docGui
-        netCli
+        (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
+        pkgs.devGui
+        pkgs.docCli
+        pkgs.docGui
+        pkgs.netCli
 
         artemisWrapper
-        docker  # FIXME: Do we actually need this command in the global env?
+        pkgs.docker  # FIXME: Do we actually need this command in the global env?
 
-        (callPackage ./displayplacer.nix {})
+        (pkgs.callPackage ./displayplacer.nix { inherit sources; })
 
-        lorri   # Needed by lorri launchd service defined below
-        direnv  # Needed by lorri
+        pkgs.lorri   # Needed by lorri launchd service defined below
+        pkgs.direnv  # Needed by lorri
         #gnumeric
 
-        cmus  # Useful at home
+        pkgs.cmus  # Useful at home
 
         shortcuts.package  # Commands used by our keyboard shortcuts
 
-        (callPackage <dotfiles/aws-helpers> {}).combined
+        (pkgs.callPackage <dotfiles/aws-helpers> {}).combined
 
         # GUI macOS applications
 
@@ -356,13 +349,14 @@ with {
     # depend on anything inside 'pkgs' (e.g. pkgs.fetchgit); otherwise we get an
     # infinite loop
     overlays = [
-      (_: super: { sources = import ./nix/sources.nix; })
+      (_: _: { sources = import ./nix/sources.nix; })
 
       # Useful Nix functions, used by the following overlays
       (import <nix-helpers/overlay.nix>)
 
       # Provides installApplication for macOS
-      (import "${cmacraeNixpkgs}/pkgs/apps.nix")
+      (self: super:
+        import "${super.sources.cmacrae.outPath}/pkgs/apps.nix" self super)
 
       # Packages which aren't in nixpkgs yet (and which I don't feel like
       # maintaining in a formal way)

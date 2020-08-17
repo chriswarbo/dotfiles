@@ -1,5 +1,30 @@
 {
+    "cmacrae": {
+        "branch": "master",
+        "description": "macOS command line utility to configure multi-display resolutions and arrangements. Essentially XRandR for macOS.",
+        "homepage": "",
+        "owner": "cmacrae",
+        "repo": ".nixpkgs",
+        "rev": "d4b51eb414b0edaffaeee9b926c32b118014c4fa",
+        "sha256": "1ssgvzgqh3lv2ly1h5gsq1nf09gjilx2s83986fb4q4ga4ak9x1b",
+        "type": "tarball",
+        "url": "https://github.com/cmacrae/.nixpkgs/archive/d4b51eb414b0edaffaeee9b926c32b118014c4fa.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "displayplacer": {
+        "branch": "master",
+        "description": "macOS command line utility to configure multi-display resolutions and arrangements. Essentially XRandR for macOS.",
+        "homepage": "",
+        "owner": "jakehilborn",
+        "repo": "displayplacer",
+        "rev": "c9eb4498d7ac53e86da7513aff5b206027f4cccf",
+        "sha256": "03i7r2rl9gv9n9qh4zw57hx0h2vi3lj2y1xkrbcxwwmxy23s0k5y",
+        "type": "tarball",
+        "url": "https://github.com/jakehilborn/displayplacer/archive/c9eb4498d7ac53e86da7513aff5b206027f4cccf.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "firefox": {
+        "name": "Firefox.dmg",
         "sha256": "1l1b6m1i9hya4awsp6pwkjlpbpk2mnlcpnmll45dxb8qcc2dn6gx",
         "type": "file",
         "url": "https://ftp.mozilla.org/pub/firefox/releases/78.0.2/mac-EME-free/en-GB/Firefox%2078.0.2.dmg",
@@ -74,6 +99,7 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "postman": {
+        "name": "postman.zip",
         "sha256": "06yziywjs0jxmax2j5bx5imhs54alplrqv6mk04wqw0r5hwbmvzd",
         "type": "file",
         "url": "https://dl.pstmn.io/download/version/7.20.1/osx64",
