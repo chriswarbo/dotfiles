@@ -2,8 +2,6 @@
 set -e
 set -o pipefail
 
-NIX_PATH=$(nix-instantiate --read-write-mode --eval \
-               -E '(import ./nixPath.nix).string'   |
-               sed -e 's/^"//g' -e 's/"$//g')
+NIX_PATH=$(./nixPath.sh)
 export NIX_PATH
 exec darwin-rebuild switch --show-trace
