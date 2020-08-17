@@ -1,0 +1,74 @@
+{
+    "niv": {
+        "branch": "master",
+        "description": "Easy dependency management for Nix projects",
+        "homepage": "https://github.com/nmattia/niv",
+        "owner": "nmattia",
+        "repo": "niv",
+        "rev": "e82eb322ea32a747a51c431d7787221bcc6d9038",
+        "sha256": "1fy4dcr05d80diwlxmh42xnjm5ki1pkbky38smvlqjaky2y2f71f",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/niv/archive/e82eb322ea32a747a51c431d7787221bcc6d9038.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nix-config": {
+        "branch": "master",
+        "description": "Mirror of http://chriswarbo.net/git/nix-config",
+        "homepage": null,
+        "owner": "warbo",
+        "repo": "nix-config",
+        "rev": "33e3f7f245110616d4d019733951cb89b8fa2aae",
+        "sha256": "0yi0np86piqlkiiiks6bjisd62fpc78ydhk6lzf8ll9mg3wn3jvs",
+        "type": "tarball",
+        "url": "https://github.com/warbo/nix-config/archive/33e3f7f245110616d4d019733951cb89b8fa2aae.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nix-darwin": {
+        "branch": "master",
+        "description": "nix modules for darwin",
+        "homepage": "",
+        "owner": "LnL7",
+        "repo": "nix-darwin",
+        "rev": "47fe6db9c9cd22c4ba57df3281f98f454880bea7",
+        "sha256": "198lxy1q7z6cmlyxd0rigrabjab4i49w2dk3xqm3bs4y0s0qimwy",
+        "type": "tarball",
+        "url": "https://github.com/LnL7/nix-darwin/archive/47fe6db9c9cd22c4ba57df3281f98f454880bea7.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nix-helpers": {
+        "branch": "master",
+        "description": "Mirror of http://chriswarbo.net/git/nix-helpers.git",
+        "homepage": null,
+        "owner": "warbo",
+        "repo": "nix-helpers",
+        "rev": "6bf3e790209175aa3ff96ec38579bc7c9f80e386",
+        "sha256": "1x5vf9938ikyg3kxk68k3q7dp9vqnf3pcnl48906rpzqi6hv9k9x",
+        "type": "tarball",
+        "url": "https://github.com/warbo/nix-helpers/archive/6bf3e790209175aa3ff96ec38579bc7c9f80e386.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "release-20.03",
+        "description": "Nix Packages collection",
+        "homepage": null,
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "fe9938ebd41dd486ca16a874a3bb9d4f2f4083aa",
+        "sha256": "0hafhkj5w0n3l5wdg2rkjbyd9pzr804qdba1lvhiasv2c9a4vi9z",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/fe9938ebd41dd486ca16a874a3bb9d4f2f4083aa.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "warbo-packages": {
+        "branch": "master",
+        "description": "Mirror of http://chriswarbo.net/git/warbo-packages.git",
+        "homepage": null,
+        "owner": "warbo",
+        "repo": "warbo-packages",
+        "rev": "00d3386b048d99deb6bef52d5fd5e2881336d3c6",
+        "sha256": "0i2xrbi3bar8vpaq1mcsxc470dfgbsnmmxxgxssjj3vszmi07kd1",
+        "type": "tarball",
+        "url": "https://github.com/warbo/warbo-packages/archive/00d3386b048d99deb6bef52d5fd5e2881336d3c6.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}
