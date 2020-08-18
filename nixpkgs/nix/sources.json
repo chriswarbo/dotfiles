@@ -56,10 +56,10 @@
         "homepage": null,
         "owner": "warbo",
         "repo": "nix-config",
-        "rev": "33e3f7f245110616d4d019733951cb89b8fa2aae",
-        "sha256": "0yi0np86piqlkiiiks6bjisd62fpc78ydhk6lzf8ll9mg3wn3jvs",
+        "rev": "e747bf588fd597b50170d8b6be32099009c948f7",
+        "sha256": "1pwi1wkzq0sj3kvj4fkm8hxl73s784qmjjlawlw6nmpwalyx054s",
         "type": "tarball",
-        "url": "https://github.com/warbo/nix-config/archive/33e3f7f245110616d4d019733951cb89b8fa2aae.tar.gz",
+        "url": "https://github.com/warbo/nix-config/archive/e747bf588fd597b50170d8b6be32099009c948f7.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nix-darwin": {
