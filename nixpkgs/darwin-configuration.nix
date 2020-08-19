@@ -440,7 +440,7 @@ with builtins // { sources = import ./nix/sources.nix; };
     nix-daemon.enable      = true;
 
     # Tiling window manager
-    yabai = import ./yabai.nix { inherit config pkgs; };
+    yabai = import ./yabai.nix { inherit (pkgs) yabai; };
   };
 
   system = {

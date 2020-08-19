@@ -7,11 +7,11 @@
 # Also note that Yabai is controlled by sending it commands, both as "config"
 # and for interaction; we define a shell script here for the former, and set up
 # keybindings for the latter in skhd.nix
-{ config, pkgs }:
+{ yabai }:
 {
   enable                  = true;
   enableScriptingAddition = true;
-  package                 = pkgs.yabai;
+  package                 = yabai;
   config                  = {
     # global settings
     active_window_border_color   = "0xff5c7e81";
