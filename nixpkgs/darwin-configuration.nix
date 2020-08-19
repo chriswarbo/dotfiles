@@ -334,6 +334,9 @@ with builtins // { sources = import ./nix/sources.nix; };
 
       # Our own overrides go here
       (self: super: {
+        artemis-tools = self.callPackage <dotfiles/artemis-tools> {};
+        aws-helpers   = self.callPackage <dotfiles/aws-helpers>   {};
+
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = super.emacs.overrideAttrs (old: {
           patches = (old.patches or []) ++ [
