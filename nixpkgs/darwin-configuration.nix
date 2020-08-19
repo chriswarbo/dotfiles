@@ -368,6 +368,48 @@ with builtins // { sources = import ./nix/sources.nix; };
           ];
         });
 
+        latestGithub = { name, url, version }:
+          with rec {
+            inherit (builtins) compareVersions foldl' toJSON trace;
+
+            versionsDrv = self.runCommand
+              "latest-github-${name}"
+              {
+                inherit url;
+                buildInputs = [
+                  self.cacert
+                  (self.python3.withPackages (p: [ p.beautifulsoup4 ]))
+                ];
+
+                default = self.writeScript "github-version-default.nix" ''
+                  with builtins; fromJSON (readFile ./versions.json)
+                '';
+
+                script        = ./githubRelease.py;
+                SSL_CERT_FILE = "${self.cacert}/etc/ssl/certs/ca-bundle.crt";
+              }
+              ''
+                mkdir "$out"
+                cp "$default" "$out/default.nix"
+                python3 "$script" "$url" > "$out"/versions.json
+              '';
+
+            versions = import versionsDrv;
+
+            latest = foldl'
+              (highest: v: if compareVersions v highest == 1
+                              then v
+                              else highest)
+              version
+              versions;
+          };
+          if latest == version
+             then (x: x)
+          else trace (toJSON {
+            inherit latest name version;
+            warning = "out-of-date dependency";
+          });
+
         nix_release = super.nix_release.override (old: {
           # Use system-wide Nix instead of attempting to use tunnel on macOS
           withNix = x: { buildInputs = []; } // x;
@@ -378,6 +420,16 @@ with builtins // { sources = import ./nix/sources.nix; };
 
         # Broken in nixpkgs, but we don't care at the moment
         stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
+
+        yabai = with self.sources;
+          self.latestGithub {
+            inherit (yabai) version;
+            name = "yabai";
+            url  = "https://github.com/koekeishiya/yabai/releases";
+          } super.yabai.overrideAttrs (old: {
+              inherit (yabai) version;
+              src = yabai.outPath;
+            });
       })
     ];
   };

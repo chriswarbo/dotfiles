@@ -131,5 +131,12 @@
         "type": "tarball",
         "url": "https://github.com/warbo/warbo-packages/archive/00d3386b048d99deb6bef52d5fd5e2881336d3c6.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "yabai": {
+      "sha256": "1y3macjkz9qk3vxkw4d6ldgszb76jgg1p46prnj9zz035aia705d",
+        "type": "file",
+        "url": "https://github.com/koekeishiya/yabai/releases/download/v3.2.1/yabai-v3.2.1.tar.gz",
+        "url_template": "https://github.com/koekeishiya/yabai/releases/download/<version>/yabai-<version>.tar.gz",
+        "version": "v3.2.1"
     }
 }
