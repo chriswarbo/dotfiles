@@ -163,105 +163,71 @@ with builtins // { sources = import ./nix/sources.nix; };
     #     nix-env -qaP | grep wget
     # Note that we prefer to bundle things together into "metapackages", so we
     # don't need to maintain long lists of things on different machines.
-    systemPackages =
-      with rec {
-        inherit (pkgs) installApplication lib mkBin shortcuts;
-        # inherit (lib);
-        # Hacky things and macOS-specific things here, for the time being
-        # TODO: Can we do this in a nicer way? (Copypasta from warbo-utilities)
-        artemisWrapper = mkBin {
-          name   = "artemis";
-          script = ''
-            #!/usr/bin/env bash
-            export EDITOR=emacsclient
-            if [[ "x$1" = "xclose" ]]
-            then
-                shift
-                # Shortcut to close the given Artemis issue ID
+    systemPackages = map (n: getAttr n pkgs) [
+      "artemis-tools" "cmus" "devGui" "docCli" "docGui" "netCli"
+      "docker"  # Do we actually need this command in the global env?
+      "lorri"   # Needed by lorri launchd service defined below
+      "direnv"  # Needed by lorri
+    ] ++
+    # Fixes, overrides, etc.
+    [
+      # binutils and gcc both provide bin/ld
+      (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
 
-                [[ "$#" -eq 1 ]] || {
-                    echo "artemis-close requires (prefix of) an issue ID. Open issues:" 1>&2
-                    artemis list 1>&2
-                    exit 1
-                 }
+      (pkgs.callPackage ./displayplacer.nix { inherit sources; })
 
-                artemis add "$1" -p state=resolved -p resolution=fixed
-            else
-                git artemis "$@"
-            fi
-          '';
-        };
-      };
-      [
-        # binutils and gcc both provide bin/ld
-        (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
-        pkgs.devGui
-        pkgs.docCli
-        pkgs.docGui
-        pkgs.netCli
+      pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
 
-        artemisWrapper
-        pkgs.docker  # FIXME: Do we actually need this command in the global env?
+      pkgs.aws-helpers.combined
+    ] ++
 
-        (pkgs.callPackage ./displayplacer.nix { inherit sources; })
+    # GUI macOS applications
+    (with { inherit (pkgs) installApplication; }; [
+      (installApplication rec {
+        inherit (sources.firefox) version;
+        name        = "Firefox";
+        sourceRoot  = "Firefox.app";
+        src         = sources.firefox.outPath;
+        description = "Firefox browser";
+        homepage    = https://www.getfirefox.com;
+      })
 
-        pkgs.lorri   # Needed by lorri launchd service defined below
-        pkgs.direnv  # Needed by lorri
-        #gnumeric
+      (installApplication rec {
+        name        = "iTerm2";
+        version     = replaceStrings ["_"] ["."] sources.iterm2.version;
+        sourceRoot  = "iTerm.app";
+        src         = sources.iterm2.outPath;
+        description = "Terminal emulator";
+        homepage    = https://iterm2.com;
+      })
 
-        pkgs.cmus  # Useful at home
+      (installApplication rec {
+        inherit (sources.postman) version;
+        name        = "Postman";
+        sourceRoot  = "Postman.app";
+        src         = sources.postman.outPath;
+        description = "GUI for testing HTTP requests and responses";
+        homepage    = https://www.getpostman.com;
+      })
 
-        shortcuts.package  # Commands used by our keyboard shortcuts
+      (installApplication rec {
+        inherit (sources.slack) version;
+        name        = "Slack";
+        sourceRoot  = "Slack.app";
+        src         = sources.slack.outPath;
+        description = "Desktop client for Slack messenger";
+        homepage    = https://www.slack.com;
+      })
 
-        (pkgs.callPackage <dotfiles/aws-helpers> {}).combined
-
-        # GUI macOS applications
-
-        (installApplication rec {
-          inherit (sources.firefox) version;
-          name        = "Firefox";
-          sourceRoot  = "Firefox.app";
-          src         = sources.firefox.outPath;
-          description = "Firefox browser";
-          homepage    = https://www.getfirefox.com;
-        })
-
-        (installApplication rec {
-          name        = "iTerm2";
-          version     = replaceStrings ["_"] ["."] sources.iterm2.version;
-          sourceRoot  = "iTerm.app";
-          src         = sources.iterm2.outPath;
-          description = "Terminal emulator";
-          homepage    = https://iterm2.com;
-        })
-
-        (installApplication rec {
-          inherit (sources.postman) version;
-          name        = "Postman";
-          sourceRoot  = "Postman.app";
-          src         = sources.postman.outPath;
-          description = "GUI for testing HTTP requests and responses";
-          homepage    = https://www.getpostman.com;
-        })
-
-        (installApplication rec {
-          inherit (sources.slack) version;
-          name        = "Slack";
-          sourceRoot  = "Slack.app";
-          src         = sources.slack.outPath;
-          description = "Desktop client for Slack messenger";
-          homepage    = https://www.slack.com;
-        })
-
-        (installApplication rec {
-          inherit (sources.vncviewer) version;
-          name        = "VNCViewer";
-          sourceRoot  = "VNC Viewer.app";
-          src         = sources.vncviewer.outPath;
-          description = "RealVNC client";
-          homepage    = https://www.realvnc.com;
-        })
-    ];
+      (installApplication rec {
+        inherit (sources.vncviewer) version;
+        name        = "VNCViewer";
+        sourceRoot  = "VNC Viewer.app";
+        src         = sources.vncviewer.outPath;
+        description = "RealVNC client";
+        homepage    = https://www.realvnc.com;
+      })
+    ]);
 
     variables = {
       # toString preserves paths, rather than adding them to the Nix store
