@@ -51,7 +51,7 @@ rec {
   list = nixpkgs.lib.mapAttrsToList (name: path: "${name}=${path}") {
     darwin = sources.nix-darwin.outPath;
     darwin-config = builtins.toString ./darwin-configuration.nix;
-    dotfiles = builtins.fetchGit ./..;
+    dotfiles = nixpkgs.lib.cleanSource ./..;
     home = builtins.getEnv "HOME";
     nix-config = sources.nix-config.outPath;
     nix-helpers = sources.nix-helpers.outPath;
