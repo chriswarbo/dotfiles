@@ -329,8 +329,8 @@ with builtins // { sources = import ./nix/sources.nix; };
       (import <warbo-packages/overlay.nix>)
 
       # Provides 'devGui', 'netCli', etc.
-      (self: super: builtins.getAttr "overrides"
-        (import <nix-config/overrides/metaPackages.nix> self super))
+      (self: super:
+        (import <nix-config/overrides/metaPackages.nix> self super).overrides)
 
       # Our own overrides go here
       (self: super: {
