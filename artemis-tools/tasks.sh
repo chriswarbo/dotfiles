@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -e
-ag "FIXME"
-ag "TODO"
+ag "FIXME" || true
+ag "TODO"  || true
 artemis list
