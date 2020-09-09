@@ -193,6 +193,15 @@ with builtins // { sources = import ./nix/sources.nix; };
       })
 
       (installApplication rec {
+        name        = "FS-UAE";
+        version     = "3.0.5";
+        sourceRoot  = "FS-UAE Launcher.app";
+        src         = sources.fs-uae;
+        description = "Amiga emulator";
+        homepage    = https://fs-uae.net;
+      })
+
+      (installApplication rec {
         name        = "iTerm2";
         version     = replaceStrings ["_"] ["."] sources.iterm2.version;
         sourceRoot  = "iTerm.app";

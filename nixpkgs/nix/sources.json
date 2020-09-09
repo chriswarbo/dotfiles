@@ -31,6 +31,13 @@
         "url_template": "https://ftp.mozilla.org/pub/firefox/releases/<version>/mac-EME-free/en-GB/Firefox%20<version>.dmg",
         "version": "78.0.2"
     },
+    "fs-uae": {
+        "sha256": "1jblrssa16xk6a8lww1c34d1gjlnmlwd287ng8k2avq6rdjy74fx",
+        "type": "file",
+        "url": "https://fs-uae.net/stable/3.0.5/FS-UAE-Suite_3.0.5_macOS_x86-64.dmg",
+        "url_template": "https://fs-uae.net/stable/<version>/FS-UAE-Suite_<version>_macOS_x86-64.dmg",
+        "version": "3.0.5"
+    },
     "iterm2": {
         "sha256": "0rw165p9iypc11pr0mmwd1z4dvg0f3is2p8bv2sk30wyd4hba4b8",
         "type": "file",
