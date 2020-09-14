@@ -236,7 +236,22 @@ with builtins // { sources = import ./nix/sources.nix; };
         description = "RealVNC client";
         homepage    = https://www.realvnc.com;
       })
-    ]);
+    ]) ++
+
+    # Android apps
+    [
+      (pkgs.androidApp {
+        name    = "trainline";
+        package = "com.thetrainline";
+        app     = pkgs.apkpure {
+          name   = "trainline";
+          sha256 =
+            "2b1d8a97f6995b0d047cf23c28e2bbd658ceb147942acc15397aa3aca712af5f";
+          path   =
+            "trainline-buy-cheap-european-train-bus-tickets/com.thetrainline";
+        };
+      })
+    ];
 
     variables = {
       # toString preserves paths, rather than adding them to the Nix store
@@ -315,6 +330,7 @@ with builtins // { sources = import ./nix/sources.nix; };
   nixpkgs = {
     config = {
       allowUnfree = true;
+      android_sdk.accept_license = true;
       permittedInsecurePackages = [
         "p7zip-16.02"
       ];
@@ -343,6 +359,8 @@ with builtins // { sources = import ./nix/sources.nix; };
 
       # Our own overrides go here
       (self: super: {
+        inherit (self.callPackage ./androidApp.nix {}) androidApp apkpure;
+
         artemis-tools = self.callPackage <dotfiles/artemis-tools> {};
         aws-helpers   = self.callPackage <dotfiles/aws-helpers>   {};
 
