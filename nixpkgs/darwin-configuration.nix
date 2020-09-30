@@ -187,6 +187,9 @@ with builtins // { sources = import ./nix/sources.nix; };
       pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
 
       pkgs.aws-helpers.combined
+
+      # For pdfjam
+      (pkgs.texlive.combine { inherit (pkgs.texlive) pdfjam scheme-small; })
     ] ++
 
     # GUI macOS applications
