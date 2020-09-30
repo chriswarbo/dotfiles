@@ -459,12 +459,16 @@ with builtins // { sources = import ./nix/sources.nix; };
         # Broken in nixpkgs, but we don't care at the moment
         stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
 
-        yabai = with self.sources;
+        yabai =
+          with self.sources;
+          assert self.nixpkgs2009 ? yabai || self.die {
+            error = "No yabai in Nixpkgs 20.09";
+          };
           self.latestGithub {
             inherit (yabai) version;
             name = "yabai";
             url  = "https://github.com/koekeishiya/yabai/releases";
-          } super.yabai.overrideAttrs (old: {
+          } (super.yabai or self.nixpkgs2009.yabai).overrideAttrs (old: {
               inherit (yabai) version;
               src = yabai.outPath;
             });
