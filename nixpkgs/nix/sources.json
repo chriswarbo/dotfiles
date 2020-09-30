@@ -87,10 +87,10 @@
         "homepage": null,
         "owner": "warbo",
         "repo": "nix-helpers",
-        "rev": "6bf3e790209175aa3ff96ec38579bc7c9f80e386",
-        "sha256": "1x5vf9938ikyg3kxk68k3q7dp9vqnf3pcnl48906rpzqi6hv9k9x",
+        "rev": "295f5db7a8c6fdf3d55a29fad265531bed776d0c",
+        "sha256": "1cf1mhwnzn7as6q5rbib2c16124lcv6izpypkxlg9xsay72iiq98",
         "type": "tarball",
-        "url": "https://github.com/warbo/nix-helpers/archive/6bf3e790209175aa3ff96ec38579bc7c9f80e386.tar.gz",
+        "url": "https://github.com/warbo/nix-helpers/archive/295f5db7a8c6fdf3d55a29fad265531bed776d0c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
