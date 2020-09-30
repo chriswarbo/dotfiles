@@ -2,6 +2,14 @@
 
 with builtins // { sources = import ./nix/sources.nix; };
 {
+  /* Avoids the following error, which appeared when upgrading to nixpkgs 20.09:
+  while evaluating 'evalModules' at
+    /nix/store/...-nixpkgs-src/lib/modules.nix:21:17, called from
+    /nix/store/...-nix-darwin-src/modules/documentation/default.nix:19:24:
+    The option `nixpkgs.localSystem' defined in `<unknown-file>' does not exist.
+  */
+  documentation.enable = false;
+
   environment = {
     darwinConfig = toString <home/.nixpkgs/darwin-configuration.nix>;
 
