@@ -189,7 +189,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       pkgs.aws-helpers.combined
 
       # For pdfjam
-      (pkgs.texlive.combine { inherit (pkgs.texlive) pdfjam scheme-small; })
+      (pkgs.callPackage ./ticketCombine.nix {})
     ] ++
 
     # GUI macOS applications
