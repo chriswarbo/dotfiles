@@ -58,5 +58,9 @@
         with open(output, 'bw') as out:
           out.write(f.read())
     '';
+  } // {
+    outputHashMode = "flat";
+    outputHashAlgo = "sha256";
+    outputHash     = sha256;
   };
 }
