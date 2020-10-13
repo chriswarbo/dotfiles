@@ -13,7 +13,12 @@
   };
 
   apkpure = { name, path, sha256 }: run {
-    name   = name + ".apk";
+    name      = name + ".apk";
+    drvExtras = {
+      outputHashMode = "flat";
+      outputHashAlgo = "sha256";
+      outputHash     = sha256;
+    };
     paths  = [ (python3.withPackages (p: [ p.beautifulsoup4 ])) ];
     vars   = { url = "https://apkpure.com/${path}/download?from=details"; };
     script = ''
@@ -58,9 +63,5 @@
         with open(output, 'bw') as out:
           out.write(f.read())
     '';
-  } // {
-    outputHashMode = "flat";
-    outputHashAlgo = "sha256";
-    outputHash     = sha256;
   };
 }
