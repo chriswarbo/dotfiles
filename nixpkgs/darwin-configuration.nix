@@ -256,8 +256,7 @@ with builtins // { sources = import ./nix/sources.nix; };
         package = "com.thetrainline";
         app     = pkgs.apkpure {
           name   = "trainline";
-          sha256 =
-            "2b1d8a97f6995b0d047cf23c28e2bbd658ceb147942acc15397aa3aca712af5f";
+          sha256 = "1j689zwla7l0ki9r4pkvhxf61z611zs2gqkfci0lqj57b37bv9vg";
           path   =
             "trainline-buy-cheap-european-train-bus-tickets/com.thetrainline";
         };
