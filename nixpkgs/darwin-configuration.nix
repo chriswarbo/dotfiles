@@ -174,6 +174,7 @@ with builtins // { sources = import ./nix/sources.nix; };
     systemPackages = map (n: getAttr n pkgs) [
       "artemis-tools" "cmus" "devGui" "docCli" "docGui" "netCli"
       "docker"  # Do we actually need this command in the global env?
+      "lftp"    # For FTP
       "lorri"   # Needed by lorri launchd service defined below
       "direnv"  # Needed by lorri
     ] ++
