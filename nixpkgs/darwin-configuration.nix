@@ -253,6 +253,17 @@ with builtins // { sources = import ./nix/sources.nix; };
     # Android apps
     [
       (pkgs.androidApp {
+        name    = "pleo";
+        package = "io.pleo.android";
+        app     = pkgs.fetchurl {
+          url = "https://storage.evozi.com" +
+                "/apk/dl/19/09/24/io.pleo.android_2026245937.apk";
+          sha1 = "ae2e04e305da4438a9a4a9ee5a8297202fb0c880";
+          #sha256 = "0j689zwla7l0ki9r4pkvhxf61z611zs2gqkfci0lqj57b37bv9vg";
+        };
+      })
+
+      (pkgs.androidApp {
         name    = "trainline";
         package = "com.thetrainline";
         app     = pkgs.apkpure {
