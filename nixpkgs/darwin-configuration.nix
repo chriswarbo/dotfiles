@@ -232,6 +232,15 @@ with builtins // { sources = import ./nix/sources.nix; };
       })
 
       (installApplication rec {
+        inherit (sources.quicksilver) version;
+        name        = "QuickSilver";
+        sourceRoot  = "QuickSilver.app";
+        src         = sources.quicksilver.outPath;
+        description = "Command runner/launcher";
+        homepage    = https://qsapp.com;
+      })
+
+      (installApplication rec {
         inherit (sources.slack) version;
         name        = "Slack";
         sourceRoot  = "Slack.app";

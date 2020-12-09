@@ -113,6 +113,14 @@
         "url_template": "https://dl.pstmn.io/download/version/<version>/osx64",
         "version": "7.20.1"
     },
+    "quicksilver": {
+        "name": "quicksilver.dmg",
+        "sha256": "1j4j0ihax62advn6phf3sv89yjydz5mnkzhcd81x759zj62c1hmb",
+        "type": "file",
+        "url": "https://qsapp.com/archives/downloads/Quicksilver%201.6.1.dmg",
+        "url_template": "https://qsapp.com/archives/downloads/Quicksilver%20<version>.dmg",
+        "version": "1.6.1"
+    },
     "slack": {
         "sha256": "1ddyp23a7g1h5l28ryc47sk6jm49n2cd46c1h2s3d2hrfdp40a9b",
         "type": "file",
