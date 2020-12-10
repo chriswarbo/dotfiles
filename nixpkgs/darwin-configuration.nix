@@ -189,6 +189,8 @@ with builtins // { sources = import ./nix/sources.nix; };
 
       pkgs.aws-helpers.combined
 
+      pkgs.loop
+
       # For pdfjam
       (pkgs.callPackage ./ticketCombine.nix {})
     ] ++
@@ -407,6 +409,18 @@ with builtins // { sources = import ./nix/sources.nix; };
             CMD=$(head -n1 < "${super.itstool}"/bin/itstool |
                   cut -d ' ' -f1 | sed -e 's@#!@@g')
             "$CMD" -s "${super.itstool}"/bin/itstool "$@"
+          '';
+        };
+
+        loop = self.mkBin {
+          name = "loop";
+          script = ''
+            #!/usr/bin/env bash
+            while true
+            do
+              "$@"
+              sleep 1
+            done
           '';
         };
 
