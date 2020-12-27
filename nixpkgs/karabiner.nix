@@ -27,6 +27,23 @@ with rec {
     manipulators = map (m: { type = "basic"; } // m) manipulators;
   };
 
+  # Whether or not we're using a Microsoft Natural keyboard
+  isNatural = naturalKeyboard "device_if";
+  unNatural = naturalKeyboard "device_unless";
+
+  naturalKeyboard = type: [
+    {
+      inherit type;
+      identifiers = [
+        {
+          is_keyboard = true;
+          vendor_id   = 1118;
+          product_id  = 219;
+        }
+      ];
+    }
+  ];
+
   # To prevent Space2Control interfering with CapsLock+SpaceBar, we set this
   # variable whenever CapsLock is held down.
   capsLockVar = "caps_lock_held_down";
