@@ -85,6 +85,8 @@ with rec {
                          command = cmd;
                        });
                        {
+                         # TODO: Use left_command as mod on Natural keyboard
+                         # (make one rule for unNatural and one for isNatural)
                          inherit from;
                          # Ignore if left_option has come from Left Command
                          conditions = whenUnset leftCommandVar;
@@ -150,40 +152,115 @@ with rec {
         } ];
       };
       [
-      {
-        conditions = haveTouchBar;
-        from       = {
-          key_code  = "non_us_backslash";
-          modifiers = { optional = [ "caps_lock" ]; };
-        };
-        to = [ { key_code = "escape"; } ];
-      }
-      {
-        conditions = haveTouchBar;
-        from       = {
-          key_code  = "non_us_backslash";
-          modifiers = { mandatory = [ "fn" ]; };
-        };
-        to = [ { key_code = "non_us_backslash"; } ];
-      }
-    ];
+        {
+          conditions = haveTouchBar;
+          from       = {
+            key_code  = "non_us_backslash";
+            modifiers = { optional = [ "caps_lock" ]; };
+          };
+          to = [ { key_code = "escape"; } ];
+        }
+        {
+          conditions = haveTouchBar;
+          from       = {
+            key_code  = "non_us_backslash";
+            modifiers = { mandatory = [ "fn" ]; };
+          };
+          to = [ { key_code = "non_us_backslash"; } ];
+        }
+      ];
 
     "Switch around modifiers" = [
       # Make modifiers more like PS/2 keyboard
 
-      # Also set leftCommandVar so we can distinguish from the real Left Option
+      # Macbook keyboard
+
       (setVariable leftCommandVar {
-        from = any "left_command";
-        to   = [ { key_code = "left_option"; } ];
+        # Set leftCommandVar so we can distinguish from the real Left Option
+        from       = any "left_command";
+        to         = [ { key_code = "left_option"; } ];
+        conditions = unNatural;
       })
       {
-        from = any "left_control";
-        to   = [ { key_code = "left_command"; } ];
+        from       = any "left_control";
+        to         = [ { key_code = "left_command"; } ];
+        conditions = unNatural;
       }
-      # Make alternative SpaceBar when we want to hold it
       {
-        from = any "right_command";
-        to   = [ { key_code = "spacebar"; } ];
+        # Make alternative SpaceBar when we want to hold it
+        from       = any "right_command";
+        to         = [ { key_code = "spacebar"; } ];
+        conditions = unNatural;
+      }
+
+      # Microsoft Natural keyboard
+
+      # {
+      #   # Bottom-left corner should be a control key
+      #   from       = any "left_command";
+      #   to         = [ { key_code = "left_control"; }];
+      #   conditions = isNatural;
+      # }
+      {
+        # Turn Alt Gr into an alternative SpaceBar when we want to hold it
+        from       = any "right_alt";
+        to         = [ { key_code = "spacebar"; } ];
+        conditions = isNatural;
+      }
+      {
+        # Fix # key
+        from = { key_code = "non_us_pound"; };
+        to   = [
+          {
+            modifiers = [ "left_alt" ];
+            key_code  = "3";
+          }
+        ];
+        conditions = isNatural;
+      }
+      {
+        # Fix ~ key
+        from = shift { key_code  = "non_us_pound"; };
+        to   = [
+          {
+            modifiers = [ "shift" ];
+            key_code  = "grave_accent_and_tilde";
+          }
+        ];
+        conditions = isNatural;
+      }
+      {
+        # Fix @ key
+        from = shift { key_code = "quote"; };
+        to   = {
+          key_code  = "2";
+          modifiers = [ "shift" ];
+        };
+        conditions = isNatural;
+      }
+      {
+        # Fix " key
+        from = shift { key_code = "2"; };
+        to   = {
+          key_code  = "quote";
+          modifiers = [ "shift" ];
+        };
+        conditions = isNatural;
+      }
+      {
+        # Fix \ key
+        from       = { key_code = "non_us_backslash"; };
+        to         = { key_code = "backslash";        };
+        conditions = isNatural;
+      }
+      {
+        # Fix | key
+        from = shift { key_code = "non_us_backslash"; };
+        to   = {
+          key_code  = "backslash";
+          modifiers = [ "shift" ];
+        };
+        conditions = isNatural;
       }
     ];
   };
