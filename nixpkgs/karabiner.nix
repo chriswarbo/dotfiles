@@ -53,6 +53,11 @@ with rec {
   # variable when Left Command is held, to distinguish it from Left Option.
   leftCommandVar = "left_command_held_down";
 
+  # On a Microsoft Natural keyboard we want to use Left Super for window manager
+  # commands, which registers as left_command. Since we're also mapping the Ctrl
+  # key to left_command, we set this flag to distinguish it from the Super key.
+  leftControlVar = "left_control_held_down";
+
   # Set a variable to 1 whilst the given key is held down.
   # Variable setting actions are prepended, since they'll interrupt any prior
   # simulated key presses, which would prevents us simulating a hold
@@ -68,63 +73,70 @@ with rec {
 
   rules = mapAttrsToList mkRule {
     "Window manager hotkeys" =
-      with {
-        # Use one 'mod' key to invoke all window manager actions
-        mod = key_code: {
-          inherit key_code;
-          modifiers = {
-            mandatory = [ "left_option" ];  # This is our 'mod' key
-            optional  = [ "caps_lock"   ];
+      # Yabai is controlled by running commands, so every action uses 'run'. We
+      # also give every WM hotkey the same modifier: left_option on the Macbook
+      # keyboard or left_command on the Microsoft Natural keyboard.
+      with rec {
+        entry = cond: var: mod: cmd: from: {
+          from = {
+            key_code  = if isString from then from else from.key_code;
+            modifiers = {
+              optional  = [ "caps_lock" ];  # We don't care about CapsLock
+
+              # Require given 'mod' key, along with shift if required
+              mandatory = [ mod ] ++
+                          (if isAttrs from && (from.shift or false)
+                           then [ "shift" ]
+                           else [         ]);
+            };
           };
+          # Require given condition, and ignore if var is set
+          conditions = cond ++ whenUnset var;
+          to         = run "'${package}/bin/shortcuts/${cmd}'";
         };
+
+        macbook = entry unNatural leftCommandVar "left_option" ;
+        natural = entry isNatural leftControlVar "left_command";
+
+        both = cmd: from: [ (macbook cmd from) (natural cmd from) ];
+
+        # Remember if shift is required
+        shifted = key_code: { inherit key_code; shift = true; };
       };
-      # Yabai is controlled by running commands, so every action uses 'run'
-      mapAttrsToList (cmd: from:
-                       assert hasAttr cmd commands || abort (toJSON {
-                         error   = "Shortcut command not found";
-                         command = cmd;
-                       });
-                       {
-                         # TODO: Use left_command as mod on Natural keyboard
-                         # (make one rule for unNatural and one for isNatural)
-                         inherit from;
-                         # Ignore if left_option has come from Left Command
-                         conditions = whenUnset leftCommandVar;
-                         to         = run "${package}/bin/shortcuts/${cmd}";
-                       }) {
-        nextWindow     =        mod "j"              ;
-        prevWindow     =        mod "k"              ;
-        moveWindowNext = shift (mod "j")             ;
-        moveWindowPrev = shift (mod "k")             ;
-        displayNext    =        mod "right_arrow"    ;
-        displayPrev    =        mod "left_arrow"     ;
-        toggle-split   =        mod "spacebar"       ;
-        close-window   = shift (mod "c")             ;
-        make-main      =        mod "return_or_enter";
-        fix-up-emacs   =        mod "e"              ;
-        labelSpaces    =        mod "r"              ;
-        shrink-vert    =        mod "i"              ;
-        grow-vert      =        mod "o"              ;
-        shrink-horiz   =        mod "h"              ;
-        grow-horiz     =        mod "l"              ;
-      }
-      ++
-      # Switch spaces with number keys
-      map (n: with { s = toString n; }; {
-            conditions = whenUnset leftCommandVar;
-            from       = mod s;
-            to         = run "'${package}/bin/shortcuts/switch-to l${s}'";
-          })
-          spaces
-      ++
-      # Send windows to spaces with shift+number keys
-      map (n: with { s = toString n; }; {
-            conditions = whenUnset leftCommandVar;
-            from       = shift (mod s);
-            to         = run "'${package}/bin/shortcuts/move-window l${s}'";
-          })
-          spaces
-      ;
+      concatLists (
+        mapAttrsToList
+          (cmd: from:
+            assert hasAttr cmd commands || abort (toJSON {
+              error   = "Shortcut command not found";
+              command = cmd;
+            });
+            both cmd from)
+          {
+            nextWindow     =         "j"              ;
+            prevWindow     =         "k"              ;
+            moveWindowNext = shifted "j"              ;
+            moveWindowPrev = shifted "k"              ;
+            displayNext    =         "right_arrow"    ;
+            displayPrev    =         "left_arrow"     ;
+            toggle-split   =         "spacebar"       ;
+            close-window   = shifted "c"              ;
+            make-main      =         "return_or_enter";
+            fix-up-emacs   =         "e"              ;
+            labelSpaces    =         "r"              ;
+            shrink-vert    =         "i"              ;
+            grow-vert      =         "o"              ;
+            shrink-horiz   =         "h"              ;
+            grow-horiz     =         "l"              ;
+          }
+        ++
+        # Switch spaces with number keys
+        map (n: with { s = toString n; }; both "switch-to l${s}" s)
+            spaces
+        ++
+        # Send windows to spaces with shift+number keys
+        map (n: with { s = toString n; }; both "move-window l${s}" (shifted s))
+            spaces
+      );
 
     "CapsLock as Control" = [
       # Set a variable so we can special-case CapsLock+SpaceBar for Emacs
@@ -195,12 +207,12 @@ with rec {
 
       # Microsoft Natural keyboard
 
-      {
+      (setVariable leftControlVar {
         # Bottom-left corner should be a command key
         from       = any "left_control";
         to         = [ { key_code = "left_command"; }];
         conditions = isNatural;
-      }
+      })
       {
         # Turn Alt Gr into an alternative SpaceBar when we want to hold it
         from       = any "right_alt";
