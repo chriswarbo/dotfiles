@@ -195,12 +195,12 @@ with rec {
 
       # Microsoft Natural keyboard
 
-      # {
-      #   # Bottom-left corner should be a control key
-      #   from       = any "left_command";
-      #   to         = [ { key_code = "left_control"; }];
-      #   conditions = isNatural;
-      # }
+      {
+        # Bottom-left corner should be a command key
+        from       = any "left_control";
+        to         = [ { key_code = "left_command"; }];
+        conditions = isNatural;
+      }
       {
         # Turn Alt Gr into an alternative SpaceBar when we want to hold it
         from       = any "right_alt";
