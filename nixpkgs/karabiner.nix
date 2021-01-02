@@ -130,13 +130,31 @@ with rec {
           }
         ++
         # Switch spaces with number keys
-        map (n: with { s = toString n; }; both "switch-to l${s}" s)
-            spaces
-        ++
+        #map (n: with { s = toString n; }; both "switch-to l${s}" s)
+        #    spaces
+        #++
         # Send windows to spaces with shift+number keys
         map (n: with { s = toString n; }; both "move-window l${s}" (shifted s))
             spaces
       );
+
+    # macOS seems unable to see the Option key, so we use Karabiner to remap it
+    # to the Ctrl key that macOS does see
+    "Remap macOS space switching" = map (n: {
+      from = {
+        key_code  = toString n;
+        modifiers = {
+          mandatory = [ "left_option" ];
+        };
+      };
+      to = [
+        {
+          key_code  = toString n;
+          modifiers = ["left_control" ];
+        }
+      ];
+      conditions = unNatural ++ whenUnset leftCommandVar;
+    }) (range 1 9);
 
     "CapsLock as Control" = [
       # Set a variable so we can special-case CapsLock+SpaceBar for Emacs
