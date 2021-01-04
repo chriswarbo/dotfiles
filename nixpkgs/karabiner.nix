@@ -140,21 +140,27 @@ with rec {
 
     # macOS seems unable to see the Option key, so we use Karabiner to remap it
     # to the Ctrl key that macOS does see
-    "Remap macOS space switching" = map (n: {
-      from = {
-        key_code  = toString n;
-        modifiers = {
-          mandatory = [ "left_option" ];
+    "Remap macOS space switching" =
+      with {
+        entry = mandatory: conditions: n: {
+          inherit conditions;
+          from = {
+            key_code  = toString n;
+            modifiers = { inherit mandatory; };
+          };
+          to = [
+            {
+              key_code  = toString n;
+              modifiers = ["left_control" ];
+            }
+          ];
         };
       };
-      to = [
-        {
-          key_code  = toString n;
-          modifiers = ["left_control" ];
-        }
-      ];
-      conditions = unNatural ++ whenUnset leftCommandVar;
-    }) (range 1 9);
+      concatLists
+        (map (n: [
+          (entry "left_option"  (unNatural ++ whenUnset leftCommandVar) n)
+          (entry "left_command" (isNatural ++ whenUnset leftControlVar) n)
+        ]) (range 1 9));
 
     "CapsLock as Control" = [
       # Set a variable so we can special-case CapsLock+SpaceBar for Emacs
