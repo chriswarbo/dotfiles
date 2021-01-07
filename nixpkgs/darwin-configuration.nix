@@ -188,7 +188,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
 
       pkgs.aws-helpers.combined
-
+      pkgs.cliclick
       pkgs.loop
 
       # For pdfjam
