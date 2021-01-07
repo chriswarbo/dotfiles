@@ -184,15 +184,13 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
 
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
-
-      pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
+      (pkgs.callPackage ./ticketCombine.nix {})
 
       pkgs.aws-helpers.combined
       pkgs.cliclick
       pkgs.loop
 
-      # For pdfjam
-      (pkgs.callPackage ./ticketCombine.nix {})
+      pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
     ] ++
 
     # GUI macOS applications
