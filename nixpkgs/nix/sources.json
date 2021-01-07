@@ -53,13 +53,6 @@
         "url_template": "https://iterm2.com/downloads/stable/iTerm2-<version>.zip",
         "version": "3_3_12"
     },
-    "jtool": {
-        "sha256": "1dvr5ksnzbrwixrfmyn8mxlhyjr2rakpadqmv3hgw0zlvbmapimn",
-        "type": "file",
-        "url": "http://newosxbook.com/tools/jtool2.tgz",
-        "url_template": "http://newosxbook.com/tools/jtool2.tgz",
-        "version": "2"
-    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",
