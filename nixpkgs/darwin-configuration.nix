@@ -387,6 +387,9 @@ with builtins // { sources = import ./nix/sources.nix; };
 
         artemis-tools = self.callPackage <dotfiles/artemis-tools> {};
         aws-helpers   = self.callPackage <dotfiles/aws-helpers>   {};
+        aws-sam-cli   = self.callPackage <dotfiles/nixpkgs/aws-sam-cli.nix> {
+          inherit (super) aws-sam-cli;
+        };
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = super.emacs.overrideAttrs (old: {
