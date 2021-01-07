@@ -1,4 +1,12 @@
 {
+    "cliclick": {
+        "name": "cliclick",
+        "sha256": "108ffp9qv4qhpqd3w5vj4ma09hk2gqp47q9s1g7mmhmg66ah0ry2",
+        "type": "tarball",
+        "url": "https://homebrew.bintray.com/bottles/cliclick-4.0.1.big_sur.bottle.tar.gz",
+        "url_template": "https://homebrew.bintray.com/bottles/cliclick-<version>.bottle.tar.gz",
+        "version": "4.0.1.big_sur"
+    },
     "cmacrae": {
         "branch": "master",
         "description": "macOS command line utility to configure multi-display resolutions and arrangements. Essentially XRandR for macOS.",
