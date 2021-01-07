@@ -331,17 +331,17 @@ with builtins // { sources = import ./nix/sources.nix; };
   };
 
   nix = {
-    # Auto upgrade nix package
-    package = pkgs.nix;
-
-    # Sandboxing is harder on macOS; not worth the hassle IMHO
-    useSandbox = false;
-
     # These are based on the number of CPU cores (check 'sysctl -n hw.ncpu')
     maxJobs    = 24;
     buildCores = 12;
 
     nixPath = (import ./nixPath.nix).list;
+
+    # Auto upgrade nix package
+    package = pkgs.nix;
+
+    # Sandboxing is harder on macOS; not worth the hassle IMHO
+    useSandbox = false;
 
     extraOptions = ''
       # Set by default by multi-user Nix installer
@@ -381,10 +381,13 @@ with builtins // { sources = import ./nix/sources.nix; };
 
       # Our own overrides go here
       (self: super: {
-        inherit (self.callPackage ./androidApp.nix {}) androidApp apkpure;
+        inherit (self.callPackage <dotfiles/nixpkgs/androidApp.nix> {})
+          androidApp apkpure;
 
-        artemis-tools = self.callPackage <dotfiles/artemis-tools> {};
-        aws-helpers   = self.callPackage <dotfiles/aws-helpers>   {};
+        artemis-tools = self.callPackage <dotfiles/artemis-tools>        {};
+        aws-helpers   = self.callPackage <dotfiles/aws-helpers>          {};
+        cliclick      = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
+
         aws-sam-cli   = self.callPackage <dotfiles/nixpkgs/aws-sam-cli.nix> {
           inherit (super) aws-sam-cli;
         };
