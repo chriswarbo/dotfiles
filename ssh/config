@@ -1,0 +1,31 @@
+Host dev-bastion
+    HostName 3.9.24.243
+    User ec2-user
+    ForwardAgent yes
+    IdentityFile /Users/chris/.ssh/zipabout-london-dev.pem
+    AddKeysToAgent yes
+
+Host dev-subnet
+    User ec2-user
+    ProxyCommand ssh dev-bastion nc 10.5.80.204 22
+
+Host prod-bastion
+    User ec2-user
+    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    HostName 18.132.183.139
+
+Host lner-test
+    HostName 10.5.48.125
+    User ec2-user
+    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    ForwardAgent yes
+    ProxyJump prod-bastion
+
+Host lner-sftp
+    HostName 10.226.28.43
+    User Zipabout
+    IdentityFile /Users/chris/setswapkeys/id_rsa
+    ForwardAgent yes
+    ProxyJump lner-test
+
+Include /Users/chris/.ssh/nix-linuxkit-ssh-config
