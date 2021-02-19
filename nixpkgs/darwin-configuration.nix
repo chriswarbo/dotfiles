@@ -194,6 +194,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       "lftp"    # For FTP
       "lorri"   # Needed by lorri launchd service defined below
       "direnv"  # Needed by lorri
+      "htop"    # Better than macOS top
     ] ++
     # Fixes, overrides, etc.
     [
