@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Tue, 09 Feb 2021 16:06:05 +0000
+State: new
+Subject: Karabiner: Map menu key on Natural keyboard to Fn
+Message-Id: <9c856bd7db8d5c3b-0-artemis@MacBook-Pro.local>
+
+Pressing F1, F2, etc. doesn't work on Microsoft Natural keyboard. It works if we
+hold down the Fn key on the mac keyboard (bottom left). Hence we should remap a
+key on the Natural keyboard to fulfil this role. I think the menu key (next to
+Alt Gr) should do the trick.
