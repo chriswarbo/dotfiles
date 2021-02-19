@@ -186,6 +186,11 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.callPackage ./dbeaver.nix {})
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
       (pkgs.callPackage ./ticketCombine.nix {})
+      (pkgs.attrsToDirs' "wrappedShell" {
+        bin = {
+          wrappedShell = pkgs.warbo-utilities-scripts.wrappedShell;
+        };
+      })
 
       pkgs.aws-helpers.combined
       pkgs.cliclick
@@ -375,6 +380,9 @@ with builtins // { sources = import ./nix/sources.nix; };
       # Packages which aren't in nixpkgs yet (and which I don't feel like
       # maintaining in a formal way)
       (import <warbo-packages/overlay.nix>)
+
+      # My own helper scripts
+      (import <warbo-utilities/overlay.nix>)
 
       # Provides 'devGui', 'netCli', etc.
       (self: super:
