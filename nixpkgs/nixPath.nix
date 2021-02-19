@@ -49,14 +49,15 @@ with rec {
 rec {
   # This [ "foo=bar" ] form is useful for nix.nixPath in a NixOS/Darwin config
   list = nixpkgs.lib.mapAttrsToList (name: path: "${name}=${path}") {
-    darwin         = sources.nix-darwin.outPath;
-    darwin-config  = builtins.toString ./darwin-configuration.nix;
-    dotfiles       = nixpkgs.lib.cleanSource ./..;
-    home           = builtins.getEnv "HOME";
-    nix-config     = sources.nix-config.outPath;
-    nix-helpers    = sources.nix-helpers.outPath;
-    nixpkgs        = sources.nixpkgs.outPath;
-    warbo-packages = sources.warbo-packages.outPath;
+    darwin          = sources.nix-darwin.outPath;
+    darwin-config   = builtins.toString ./darwin-configuration.nix;
+    dotfiles        = nixpkgs.lib.cleanSource ./..;
+    home            = builtins.getEnv "HOME";
+    nix-config      = sources.nix-config.outPath;
+    nix-helpers     = sources.nix-helpers.outPath;
+    nixpkgs         = sources.nixpkgs.outPath;
+    warbo-packages  = sources.warbo-packages.outPath;
+    warbo-utilities = sources.warbo-utilities.outPath;
   };
 
   # This "foo=bar:baz=quux" form is useful for NIX_PATH environment variables

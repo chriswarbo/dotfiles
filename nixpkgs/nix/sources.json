@@ -155,6 +155,18 @@
         "url": "https://github.com/warbo/warbo-packages/archive/00d3386b048d99deb6bef52d5fd5e2881336d3c6.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "warbo-utilities": {
+        "branch": "master",
+        "description": "Mirror of http://chriswarbo.net/git/warbo-utilities.git",
+        "homepage": null,
+        "owner": "warbo",
+        "repo": "warbo-utilities",
+        "rev": "81e9a86ceab96215cd20a40f0b927b053ef7568d",
+        "sha256": "0fg47anv4pznh7zlb27j2266qqk3z4h02ka87rz7w92lj0y8pbps",
+        "type": "tarball",
+        "url": "https://github.com/warbo/warbo-utilities/archive/81e9a86ceab96215cd20a40f0b927b053ef7568d.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "yabai": {
         "sha256": "15i0ygm02jhif4vnpw09w1i925jzbwjl5ggvwslclxbj1mkjrfc1",
         "type": "file",
