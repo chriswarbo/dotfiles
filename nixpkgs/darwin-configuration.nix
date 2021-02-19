@@ -183,6 +183,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       # binutils and gcc both provide bin/ld
       (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
 
+      (pkgs.callPackage ./dbeaver.nix {})
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
       (pkgs.callPackage ./ticketCombine.nix {})
 
