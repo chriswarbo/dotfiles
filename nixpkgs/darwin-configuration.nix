@@ -420,13 +420,20 @@ with builtins // { sources = import ./nix/sources.nix; };
         artemis-tools = self.callPackage <dotfiles/artemis-tools>        {};
         aws-helpers   = self.callPackage <dotfiles/aws-helpers>          {};
         cliclick      = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
+        inherit (self.macOSCompilerFix)
+          artemis
+          aspell
+          bibclean
+          bibtool
+        ;
+
         inherit (import <nixpkgs> {})
           gnumeric
         ;
 
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
-        emacs = super.emacs.overrideAttrs (old: {
+        emacs = self.macOSCompilerFix.emacs.overrideAttrs (old: {
           patches = (old.patches or []) ++ [
             (super.fetchurl {
               url = concatStringsSep "/" [
@@ -515,11 +522,38 @@ with builtins // { sources = import ./nix/sources.nix; };
           withNix = x: { buildInputs = []; } // x;
         });
 
+        # FIXME: This revision fixes a compilation issue on macOS Big Sur:
+        # ld: file not found: /usr/lib/system/libcache.dylib for architecture x86_64
+        # Hopefully it will be in nixpkgs 21.03
+        macOSCompilerFix = builtins.trace
+          "TODO: Remove macOSCompilerFix once upstream nixpkgs works (21.03?)"
+          import (self.getNixpkgs {
+            rev    = "9dd4dda";
+            sha256 = "0a5n1122mwwm2ndlr6y5b8x6mi6mja1dw5widaw9sn323aznr800";
+          }) {
+            overlays = [
+              (import     <nix-helpers/overlay.nix>)
+              (import  <warbo-packages/overlay.nix>)
+              (import <warbo-utilities/overlay.nix>)
+              (self: super:
+                (import <nix-config/overrides/metaPackages.nix> self super)
+                  .overrides)
+          ];
+        };
+
         # Scripts to bind to hotkeys
-        shortcuts = self.callPackage ./shortcuts.nix {};
+        shortcuts = self.macOSCompilerFix.callPackage ./shortcuts.nix {};
 
         # Broken in nixpkgs, but we don't care at the moment
         stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
+
+        wrappedShell = super.attrsToDirs' "wrappedShell" {
+          bin = {
+            inherit (self.macOSCompilerFix.warbo-utilities-scripts)
+              wrappedShell
+            ;
+          };
+        };
 
         yabai =
           with self.sources;
