@@ -115,11 +115,11 @@
     },
     "postman": {
         "name": "postman.zip",
-        "sha256": "1jcjs8xhv7ybh5ksf77h5x86f5blv8cypaba3k3xycxhy02ylwzk",
+        "sha256": "177i1nvx0n0z3fkwzxlmkj5miaxhjsw4pkmb68lws9i8w7bg379d",
         "type": "file",
-        "url": "https://dl.pstmn.io/download/version/7.36.1/osx64",
+        "url": "https://dl.pstmn.io/download/version/8.0.6/osx64",
         "url_template": "https://dl.pstmn.io/download/version/<version>/osx64",
-        "version": "7.36.1"
+        "version": "8.0.6"
     },
     "quicksilver": {
         "name": "quicksilver.dmg",
