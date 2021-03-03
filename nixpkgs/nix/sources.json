@@ -102,16 +102,11 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "branch": "release-20.09",
-        "description": "Nix Packages collection",
-        "homepage": null,
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9dd4dda",
-        "sha256": "0a5n1122mwwm2ndlr6y5b8x6mi6mja1dw5widaw9sn323aznr800",
+        "sha256": "1z20y0lblb452h2gghgds34g7lrj7v8gfhz66w687ws8jqdm3bzz",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/9dd4dda.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+        "url": "https://github.com/NixOS/nixpkgs/archive/df8e3bd.tar.gz",
+        "url_template": "https://github.com/NixOS/nixpkgs/archive/<version>.tar.gz",
+        "version": "df8e3bd"
     },
     "postman": {
         "name": "postman.zip",
