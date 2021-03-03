@@ -1,3 +1,8 @@
+config/cmus/
 config/cmus/cache
+config/configstore/
+config/htop/
+config/inkscape/
 config/karabiner
+config/karabiner.backup*
 result
