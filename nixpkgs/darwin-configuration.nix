@@ -210,17 +210,12 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.callPackage ./dbeaver.nix {})
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
       (pkgs.callPackage ./ticketCombine.nix {})
-      (pkgs.attrsToDirs' "wrappedShell" {
-        bin = {
-          wrappedShell = pkgs.warbo-utilities-scripts.wrappedShell;
-        };
-      })
 
       pkgs.aws-helpers.combined
       pkgs.cliclick
       pkgs.loop
-
       pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
+      pkgs.wrappedShell
     ] ++
 
     # GUI macOS applications
@@ -417,9 +412,6 @@ with builtins // { sources = import ./nix/sources.nix; };
         inherit (self.callPackage <dotfiles/nixpkgs/androidApp.nix> {})
           androidApp apkpure;
 
-        artemis-tools = self.callPackage <dotfiles/artemis-tools>        {};
-        aws-helpers   = self.callPackage <dotfiles/aws-helpers>          {};
-        cliclick      = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
         inherit (self.macOSCompilerFix)
           artemis
           aspell
@@ -431,6 +423,11 @@ with builtins // { sources = import ./nix/sources.nix; };
           gnumeric
         ;
 
+        artemis-tools = self.macOSCompilerFix.callPackage
+          <dotfiles/artemis-tools> {};
+
+        aws-helpers = self.callPackage <dotfiles/aws-helpers>          {};
+        cliclick    = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = self.macOSCompilerFix.emacs.overrideAttrs (old: {
