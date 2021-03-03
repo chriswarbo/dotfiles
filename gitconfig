@@ -1,0 +1,5 @@
+[user]
+	name = Chris Warburton
+	email = chris@zipabout.com
+[diff]
+	algorithm = histogram
