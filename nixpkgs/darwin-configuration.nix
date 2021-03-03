@@ -189,12 +189,17 @@ with builtins // { sources = import ./nix/sources.nix; };
     # Note that we prefer to bundle things together into "metapackages", so we
     # don't need to maintain long lists of things on different machines.
     systemPackages = map (n: getAttr n pkgs) [
-      "artemis-tools" "cmus" "devGui" "docCli" "docGui" "netCli"
+      "artemis-tools"
+      "cmus"
+      "devGui"
+      "direnv"  # Needed by lorri
+      "docCli"
+      "docGui"
       "docker"  # Do we actually need this command in the global env?
+      "htop"    # Better than macOS top
       "lftp"    # For FTP
       "lorri"   # Needed by lorri launchd service defined below
-      "direnv"  # Needed by lorri
-      "htop"    # Better than macOS top
+      "netCli"
     ] ++
     # Fixes, overrides, etc.
     [
