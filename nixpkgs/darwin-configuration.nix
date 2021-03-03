@@ -415,10 +415,6 @@ with builtins // { sources = import ./nix/sources.nix; };
         aws-helpers   = self.callPackage <dotfiles/aws-helpers>          {};
         cliclick      = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
 
-        aws-sam-cli   = self.callPackage <dotfiles/nixpkgs/aws-sam-cli.nix> {
-          inherit (super) aws-sam-cli;
-        };
-
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = super.emacs.overrideAttrs (old: {
           patches = (old.patches or []) ++ [
