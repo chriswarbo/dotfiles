@@ -1,6 +1,10 @@
 # See https://direnv.net/docs/hook.html
 eval "$(direnv hook bash)"
 
+pushd "$(dirname "$(readlink -f "$HOME/.bashrc")")/nixpkgs" > /dev/null
+  export NIX_PATH=$(./nixPath.sh)
+popd > /dev/null
+
 showTime() {
     if [[ "$?" -eq 0 ]]
     then
