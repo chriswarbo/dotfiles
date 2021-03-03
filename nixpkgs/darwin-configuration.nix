@@ -341,7 +341,7 @@ with builtins // { sources = import ./nix/sources.nix; };
     ];
   };
 
-  imports = [ ./openvpn.nix ];
+  imports = [];
 
   launchd.user.agents = {
     "lorri" = {
@@ -628,12 +628,6 @@ with builtins // { sources = import ./nix/sources.nix; };
   services = {
     activate-system.enable = true;
     nix-daemon.enable      = true;
-
-    openvpn.servers = {
-      devVPN = {
-        config = '' config /Users/chris/dev-vpn/zipabout-client-config.ovpn '';
-      };
-    };
 
     # Tiling window manager
     yabai = import ./yabai.nix { inherit (pkgs) yabai; };
