@@ -196,6 +196,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       "docCli"
       "docGui"
       "docker"  # Do we actually need this command in the global env?
+      "gnumeric"
       "htop"    # Better than macOS top
       "lftp"    # For FTP
       "lorri"   # Needed by lorri launchd service defined below
@@ -419,6 +420,10 @@ with builtins // { sources = import ./nix/sources.nix; };
         artemis-tools = self.callPackage <dotfiles/artemis-tools>        {};
         aws-helpers   = self.callPackage <dotfiles/aws-helpers>          {};
         cliclick      = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
+        inherit (import <nixpkgs> {})
+          gnumeric
+        ;
+
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
         emacs = super.emacs.overrideAttrs (old: {
