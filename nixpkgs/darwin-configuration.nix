@@ -447,6 +447,10 @@ with builtins // { sources = import ./nix/sources.nix; };
           ];
         });
 
+        allowCollisions = pkg: pkg.overrideAttrs (old: {
+          ignoreCollisions = true;
+        });
+
         itstool = self.mkBin {
           name   = "itstool";
           script = ''
