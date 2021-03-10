@@ -194,7 +194,6 @@ with builtins // { sources = import ./nix/sources.nix; };
       "cmus"
       "devGui"
       "direnv"  # Needed by lorri
-      "docCli"
       "docGui"
       "docker"  # Do we actually need this command in the global env?
       "gnumeric"
@@ -205,8 +204,8 @@ with builtins // { sources = import ./nix/sources.nix; };
     ] ++
     # Fixes, overrides, etc.
     [
-      # binutils and gcc both provide bin/ld
-      (pkgs.devCli.overrideAttrs (old: { ignoreCollisions = true; }))
+      (pkgs.allowCollisions pkgs.devCli)  # binutils and gcc both provide bin/ld
+      (pkgs.allowCollisions pkgs.docCli)  # Allow fonts to conflict
 
       (pkgs.callPackage ./dbeaver.nix {})
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
