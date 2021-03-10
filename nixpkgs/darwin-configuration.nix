@@ -321,12 +321,6 @@ with builtins // { sources = import ./nix/sources.nix; };
   };
 
   fonts = {
-    #enableDefaultFonts      = true;
-    /*fontconfig.defaultFonts = {
-      monospace = [ "Droid Sans Mono" ];
-      sansSerif = [ "Droid Sans"      ];
-      serif     = [ "Droid Sans"      ];
-    };*/
     fonts = [
       pkgs.anonymousPro
       #pkgs.droid-fonts
