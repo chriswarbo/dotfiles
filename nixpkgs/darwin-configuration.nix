@@ -190,6 +190,7 @@ with builtins // { sources = import ./nix/sources.nix; };
     # don't need to maintain long lists of things on different machines.
     systemPackages = map (n: getAttr n pkgs) [
       "artemis-tools"
+      "async-profiler"
       "cmus"
       "devGui"
       "direnv"  # Needed by lorri
@@ -425,6 +426,9 @@ with builtins // { sources = import ./nix/sources.nix; };
 
         artemis-tools = self.macOSCompilerFix.callPackage
           <dotfiles/artemis-tools> {};
+
+        async-profiler = self.macOSCompilerFix.callPackage
+          ../async-profiler {};
 
         aws-helpers = self.callPackage <dotfiles/aws-helpers>          {};
         cliclick    = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
