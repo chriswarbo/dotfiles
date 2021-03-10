@@ -321,14 +321,76 @@ with builtins // { sources = import ./nix/sources.nix; };
   };
 
   fonts = {
-    fonts = [
-      pkgs.anonymousPro
-      #pkgs.droid-fonts
-      #pkgs.liberation_ttf
-      #pkgs.terminus_font
-      pkgs.ttf_bitstream_vera
-    ];
     enableFontDir = true;
+    fonts         =
+      with pkgs.macOSCompilerFix;
+      with {
+        without = orig: paths: runCommand "${orig.name}-trimmed"
+          { inherit orig; }
+          ''
+            cp -rs "$orig" "$out"
+            chmod +w -R "$out"
+            cd "$out"
+            echo "Removing specified paths from $PWD" 1>&2
+            ${concatStringsSep "\n"
+                (map (f: "rm -rv " + lib.escapeShellArg f) paths)}
+          '';
+      };
+      map pkgs.allowCollisions [
+        ankacoder
+        ankacoder-condensed
+        anonymousPro
+        camingo-code
+        cascadia-code
+        d2coding
+        dejavu_fonts
+        (without droid-fonts [
+          "share/fonts/truetype/Roboto-Bold.ttf"
+          "share/fonts/truetype/Roboto-BoldItalic.ttf"
+          "share/fonts/truetype/Roboto-Italic.ttf"
+          "share/fonts/truetype/Roboto-Light.ttf"
+          "share/fonts/truetype/Roboto-LightItalic.ttf"
+          "share/fonts/truetype/Roboto-Regular.ttf"
+          "share/fonts/truetype/Roboto-Thin.ttf"
+          "share/fonts/truetype/Roboto-ThinItalic.ttf"
+          "share/fonts/truetype/RobotoCondensed-Bold.ttf"
+          "share/fonts/truetype/RobotoCondensed-BoldItalic.ttf"
+          "share/fonts/truetype/RobotoCondensed-Italic.ttf"
+          "share/fonts/truetype/RobotoCondensed-Regular.ttf"
+        ])
+        (without envypn-font [
+          "share/fonts/misc/fonts.dir"
+        ])
+        fantasque-sans-mono
+        (without fira [
+          "share/fonts/opentype/FiraMono-Bold.otf"
+          "share/fonts/opentype/FiraMono-Medium.otf"
+          "share/fonts/opentype/FiraMono-Regular.otf"
+        ])
+        fira-code
+        fira-code-symbols
+        fira-mono
+        freefont_ttf
+        (without google-fonts [
+          "share/fonts/truetype/OxygenMono-Regular.ttf"
+        ])
+        gyre-fonts
+        hack-font
+        hasklig
+        hyperscrypt-font
+        jetbrains-mono
+        liberation_ttf
+        noto-fonts-emoji
+        oxygenfonts
+        source-code-pro
+        (without terminus_font [
+          "share/fonts/misc/fonts.dir"
+          "share/fonts/terminus/fonts.scale"
+          "share/fonts/terminus/fonts.dir"
+        ])
+        ttf_bitstream_vera
+        unifont
+      ];
   };
 
   imports = [];
