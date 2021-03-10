@@ -334,6 +334,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       #pkgs.terminus_font
       pkgs.ttf_bitstream_vera
     ];
+    enableFontDir = true;
   };
 
   imports = [];
