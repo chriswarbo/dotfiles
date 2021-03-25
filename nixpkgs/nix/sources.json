@@ -33,11 +33,11 @@
     },
     "firefox": {
         "name": "Firefox.dmg",
-        "sha256": "0kz61fkcc8pid8d1biv13nkyn6vfjbz90xfmwq019cxhgygq2096",
+        "sha256": "1bb9knicy8bda93xr4z1a45safwrwds9bk7h875lkvgnjkfy118h",
         "type": "file",
-        "url": "https://ftp.mozilla.org/pub/firefox/releases/86.0/mac-EME-free/en-GB/Firefox%2086.0.dmg",
+        "url": "https://ftp.mozilla.org/pub/firefox/releases/87.0/mac-EME-free/en-GB/Firefox%2087.0.dmg",
         "url_template": "https://ftp.mozilla.org/pub/firefox/releases/<version>/mac-EME-free/en-GB/Firefox%20<version>.dmg",
-        "version": "86.0"
+        "version": "87.0"
     },
     "fs-uae": {
         "sha256": "1jblrssa16xk6a8lww1c34d1gjlnmlwd287ng8k2avq6rdjy74fx",
