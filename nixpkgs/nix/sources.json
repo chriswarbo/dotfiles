@@ -125,11 +125,11 @@
         "version": "1.6.1"
     },
     "slack": {
-        "sha256": "0xf8z8xzi88vm0xzixrqra0qjp9idcsjg7zpvgfs0k576n2lf533",
         "type": "file",
-        "url": "https://downloads.slack-edge.com/releases/macos/4.13.0/prod/x64/Slack-4.13.0-macOS.zip",
+        "sha256": "02ylbbkkljijfhmi95p3y3iy7im33ghqr41zgpjlf5snhrarxshv",
+        "url": "https://downloads.slack-edge.com/releases/macos/4.14.0/prod/x64/Slack-4.14.0-macOS.zip",
         "url_template": "https://downloads.slack-edge.com/releases/macos/<version>/prod/x64/Slack-<version>-macOS.zip",
-        "version": "4.13.0"
+        "version": "4.14.0"
     },
     "vncviewer": {
         "sha256": "1pcpj493rynx81hxawwir8g5m4awnx9wkas93cl2xap4x5s520yn",
