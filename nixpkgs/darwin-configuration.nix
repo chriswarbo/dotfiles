@@ -266,6 +266,15 @@ with builtins // { sources = import ./nix/sources.nix; };
       })
 
       (installApplication rec {
+        inherit (sources.scummvm) version;
+        name        = "ScummVM";
+        sourceRoot  = "ScummVM.app";
+        src         = sources.scummvm.outPath;
+        description = "Adventure game emulator";
+        homepage    = https://scummvm.org;
+      })
+
+      (installApplication rec {
         inherit (sources.slack) version;
         name        = "Slack";
         sourceRoot  = "Slack.app";
