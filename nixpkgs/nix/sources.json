@@ -124,9 +124,16 @@
         "url_template": "https://qsapp.com/archives/downloads/Quicksilver%20<version>.dmg",
         "version": "1.6.1"
     },
-    "slack": {
+    "scummvm": {
+        "sha256": "0phak0zcgb48vhmsjc215ihmn5xkk5h3wydi6rxad1jyxnmyak84",
         "type": "file",
+        "url": "https://downloads.scummvm.org/frs/scummvm/2.2.0/scummvm-2.2.0-macosx.dmg",
+        "url_template": "https://downloads.scummvm.org/frs/scummvm/<version>/scummvm-<version>-macosx.dmg",
+        "version": "2.2.0"
+    },
+    "slack": {
         "sha256": "02ylbbkkljijfhmi95p3y3iy7im33ghqr41zgpjlf5snhrarxshv",
+        "type": "file",
         "url": "https://downloads.slack-edge.com/releases/macos/4.14.0/prod/x64/Slack-4.14.0-macOS.zip",
         "url_template": "https://downloads.slack-edge.com/releases/macos/<version>/prod/x64/Slack-<version>-macOS.zip",
         "version": "4.14.0"
