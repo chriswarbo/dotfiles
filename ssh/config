@@ -1,3 +1,21 @@
+# We want access to warbo@github.com and chriswarbo@github.com, but
+# GitHub don't let us specify the username: it's always git@github.com,
+# and we're identified by our SSH key. This means we need to send a
+# different key depending on which user we're trying to be.
+# Let's use chriswarbo for the default github.com (so accessing ZipAbout
+# repos is easiest), and make an alias for warbo for those few times we
+# need such access.
+Host github.com-warbo
+  HostName github.com
+  User git
+  IdentityFile /Users/chris/.ssh/warbo_rsa
+
+# Might as well provide this alias too, but github.com will also work
+Host github.com-chriswarbo
+  HostName github.com
+  User git
+  IdentityFile /Users/chris/.ssh/id_rsa
+
 Host dev-bastion
     HostName 3.9.24.243
     User ec2-user

@@ -153,30 +153,6 @@ with builtins // { sources = import ./nix/sources.nix; };
         /run/current-system/sw/bin/bash
         /run/current-system/sw/bin/unwrappedShell
       '';
-
-      "ssh/ssh_config".text = ''
-        # We want access to warbo@github.com and chriswarbo@github.com, but
-        # GitHub don't let us specify the username: it's always git@github.com,
-        # and we're identified by our SSH key. This means we need to send a
-        # different key depending on which user we're trying to be.
-        # Let's use chriswarbo for the default github.com (so accessing ZipAbout
-        # repos is easiest), and make an alias for warbo for those few times we
-        # need such access.
-        Host github.com-warbo
-          HostName github.com
-          User git
-          IdentityFile ${toString <home/.ssh/warbo_rsa>}
-
-        # Might as well provide this alias too, but github.com will also work
-        Host github.com-chriswarbo
-          HostName github.com
-          User git
-          IdentityFile ${toString <home/.ssh/id_rsa>}
-
-        # Taken from default macOS /etc/ssh/ssh_config
-        Host *
-          SendEnv LANG LC_*
-      '';
     };
 
     # Make sure shared data is available, e.g. site-lisp for Emacs
