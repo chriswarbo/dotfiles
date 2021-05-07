@@ -1,4 +1,4 @@
-{ dbeaver, getNixpkgs, jdk11 }:
+{ dbeaver, getNixpkgs, jdk14 }:
 
 with rec {
   inherit (builtins) elem trace;
@@ -22,7 +22,7 @@ with rec {
 
   overridden = (newPkgs.dbeaver.override (old: {
     # Avoid 'md5WithRSAEncryption_oid cannot be resolved or is not a field'
-    jdk = jdk11;
+    jdk = jdk14;
   })).overrideAttrs (old: rec {
     # References broken fetchedMavenDeps
     buildPhase = ''
