@@ -108,6 +108,9 @@ with builtins // { sources = import ./nix/sources.nix; };
         # The above was copy/pasted from the (default?) macOS /etc/hosts
         # The below is our own stuff
         192.168.86.32 phone
+
+        3.9.24.243 dev-bastion
+        18.132.183.139 prod-bastion
       '';
 
       "karabiner/karabiner.json".text = toJSON (import ./karabiner.nix {
