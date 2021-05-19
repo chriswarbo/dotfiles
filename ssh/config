@@ -32,6 +32,11 @@ Host prod-bastion
     IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
     HostName 18.132.183.139
 
+Host prod-bastion2
+    User ec2-user
+    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    HostName 18.133.94.117
+
 Host lner-test
     HostName 10.5.48.125
     User ec2-user
