@@ -31,6 +31,13 @@
         "url": "https://github.com/jakehilborn/displayplacer/archive/c9eb4498d7ac53e86da7513aff5b206027f4cccf.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "dockerDesktop": {
+        "sha256": "19048yl8qxhpw463qla79i4asy77lbk78zlbabwj8938ba631b07",
+        "type": "file",
+        "url": "https://desktop.docker.com/mac/stable/amd64/63878/Docker.dmg",
+        "url_template": "https://desktop.docker.com/mac/stable/amd64/<version>/Docker.dmg",
+        "version": "63878"
+    },
     "firefox": {
         "name": "Firefox.dmg",
         "sha256": "0rcldrd6wdc6zsm2bfmpmc81cbhfyivisasvrh9f1laa3p18sjn5",

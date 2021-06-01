@@ -200,6 +200,15 @@ with builtins // { sources = import ./nix/sources.nix; };
     # GUI macOS applications
     (with { inherit (pkgs) installApplication; }; [
       (installApplication rec {
+        inherit (sources.dockerDesktop) version;
+        name        = "DockerDesktop";
+        sourceRoot  = "Docker.app";
+        src         = sources.dockerDesktop.outPath;
+        description = ''Includes Docker client commands and daemon'';
+        homepage    = https://www.docker.com/products/docker-desktop;
+      })
+
+      (installApplication rec {
         inherit (sources.firefox) version;
         name        = "Firefox";
         sourceRoot  = "Firefox.app";
