@@ -46,13 +46,6 @@
         "url_template": "https://ftp.mozilla.org/pub/firefox/releases/<version>/mac-EME-free/en-GB/Firefox%20<version>.dmg",
         "version": "88.0.1"
     },
-    "fs-uae": {
-        "sha256": "1jblrssa16xk6a8lww1c34d1gjlnmlwd287ng8k2avq6rdjy74fx",
-        "type": "file",
-        "url": "https://fs-uae.net/stable/3.0.5/FS-UAE-Suite_3.0.5_macOS_x86-64.dmg",
-        "url_template": "https://fs-uae.net/stable/<version>/FS-UAE-Suite_<version>_macOS_x86-64.dmg",
-        "version": "3.0.5"
-    },
     "iterm2": {
         "sha256": "0rw165p9iypc11pr0mmwd1z4dvg0f3is2p8bv2sk30wyd4hba4b8",
         "type": "file",
@@ -122,21 +115,6 @@
         "url": "https://dl.pstmn.io/download/version/8.2.3/osx64",
         "url_template": "https://dl.pstmn.io/download/version/<version>/osx64",
         "version": "8.2.3"
-    },
-    "quicksilver": {
-        "name": "quicksilver.dmg",
-        "sha256": "1j4j0ihax62advn6phf3sv89yjydz5mnkzhcd81x759zj62c1hmb",
-        "type": "file",
-        "url": "https://qsapp.com/archives/downloads/Quicksilver%201.6.1.dmg",
-        "url_template": "https://qsapp.com/archives/downloads/Quicksilver%20<version>.dmg",
-        "version": "1.6.1"
-    },
-    "scummvm": {
-        "sha256": "0phak0zcgb48vhmsjc215ihmn5xkk5h3wydi6rxad1jyxnmyak84",
-        "type": "file",
-        "url": "https://downloads.scummvm.org/frs/scummvm/2.2.0/scummvm-2.2.0-macosx.dmg",
-        "url_template": "https://downloads.scummvm.org/frs/scummvm/<version>/scummvm-<version>-macosx.dmg",
-        "version": "2.2.0"
     },
     "slack": {
         "sha256": "0pppkqd8gizxnkjxp069lv1d7a5papk2g1va0780cy04bpwawk3l",

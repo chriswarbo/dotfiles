@@ -218,15 +218,6 @@ with builtins // { sources = import ./nix/sources.nix; };
       })
 
       (installApplication rec {
-        name        = "FS-UAE";
-        version     = "3.0.5";
-        sourceRoot  = "FS-UAE Launcher.app";
-        src         = sources.fs-uae;
-        description = "Amiga emulator";
-        homepage    = https://fs-uae.net;
-      })
-
-      (installApplication rec {
         name        = "iTerm2";
         version     = replaceStrings ["_"] ["."] sources.iterm2.version;
         sourceRoot  = "iTerm.app";
@@ -242,24 +233,6 @@ with builtins // { sources = import ./nix/sources.nix; };
         src         = sources.postman.outPath;
         description = "GUI for testing HTTP requests and responses";
         homepage    = https://www.getpostman.com;
-      })
-
-      (installApplication rec {
-        inherit (sources.quicksilver) version;
-        name        = "QuickSilver";
-        sourceRoot  = "QuickSilver.app";
-        src         = sources.quicksilver.outPath;
-        description = "Command runner/launcher";
-        homepage    = https://qsapp.com;
-      })
-
-      (installApplication rec {
-        inherit (sources.scummvm) version;
-        name        = "ScummVM";
-        sourceRoot  = "ScummVM.app";
-        src         = sources.scummvm.outPath;
-        description = "Adventure game emulator";
-        homepage    = https://scummvm.org;
       })
 
       (installApplication rec {
