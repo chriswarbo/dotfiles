@@ -155,10 +155,10 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yabai": {
-        "sha256": "1b5r4xv3is9dx9lnp3qxyzfxrryjkhdncpcqdzmjxwjcg4swgvjg",
+        "sha256": "0666km1xmp3hdzadgsqvxxw4va8960cs9r3f5dd7gkxi60h8prsg",
         "type": "file",
-        "url": "https://github.com/koekeishiya/yabai/releases/download/v3.3.8/yabai-v3.3.8.tar.gz",
+        "url": "https://github.com/koekeishiya/yabai/releases/download/v3.3.10/yabai-v3.3.10.tar.gz",
         "url_template": "https://github.com/koekeishiya/yabai/releases/download/<version>/yabai-<version>.tar.gz",
-        "version": "v3.3.8"
+        "version": "v3.3.10"
     }
 }
