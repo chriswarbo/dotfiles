@@ -293,7 +293,7 @@ with builtins // { sources = import ./nix/sources.nix; };
   fonts = {
     enableFontDir = true;
     fonts         =
-      with pkgs.macOSCompilerFix;
+      with pkgs;
       with {
         without = orig: paths: runCommand "${orig.name}-trimmed"
           { inherit orig; }
@@ -439,30 +439,23 @@ with builtins // { sources = import ./nix/sources.nix; };
         inherit (self.callPackage <dotfiles/nixpkgs/androidApp.nix> {})
           androidApp apkpure;
 
-        inherit (self.macOSCompilerFix)
-          artemis
-          aspell
-          bibclean
-          bibtool
-        ;
-
         inherit (import <nixpkgs> {})
           gnumeric
         ;
 
         inherit (self.nixpkgs2009) aws-sam-cli;
 
-        artemis-tools = self.macOSCompilerFix.callPackage
+        artemis-tools = self.callPackage
           <dotfiles/artemis-tools> {};
 
-        async-profiler = self.macOSCompilerFix.callPackage
+        async-profiler = self.callPackage
           ../async-profiler {};
 
         aws-helpers = self.callPackage <dotfiles/aws-helpers>          {};
         cliclick    = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)
-        emacs = self.macOSCompilerFix.emacs.overrideAttrs (old: {
+        emacs = super.emacs.overrideAttrs (old: {
           patches = (old.patches or []) ++ [
             (super.fetchurl {
               url = concatStringsSep "/" [
@@ -555,34 +548,15 @@ with builtins // { sources = import ./nix/sources.nix; };
           withNix = x: { buildInputs = []; } // x;
         });
 
-        # FIXME: This revision fixes a compilation issue on macOS Big Sur:
-        # ld: file not found: /usr/lib/system/libcache.dylib for architecture x86_64
-        # Hopefully it will be in nixpkgs 21.03
-        macOSCompilerFix = builtins.trace
-          "TODO: Remove macOSCompilerFix once upstream nixpkgs works (21.03?)"
-          import (self.getNixpkgs {
-            rev    = "9dd4dda";
-            sha256 = "0a5n1122mwwm2ndlr6y5b8x6mi6mja1dw5widaw9sn323aznr800";
-          }) {
-            overlays = [
-              (import     <nix-helpers/overlay.nix>)
-              (import  <warbo-packages/overlay.nix>)
-              (import <warbo-utilities/overlay.nix>)
-              (self: super:
-                (import <nix-config/overrides/metaPackages.nix> self super)
-                  .overrides)
-          ];
-        };
-
         # Scripts to bind to hotkeys
-        shortcuts = self.macOSCompilerFix.callPackage ./shortcuts.nix {};
+        shortcuts = self.callPackage ./shortcuts.nix {};
 
         # Broken in nixpkgs, but we don't care at the moment
         stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
 
         wrappedShell = super.attrsToDirs' "wrappedShell" {
           bin = {
-            inherit (self.macOSCompilerFix.warbo-utilities-scripts)
+            inherit (self.warbo-utilities-scripts)
               wrappedShell
             ;
           };
