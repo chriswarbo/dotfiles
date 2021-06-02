@@ -348,7 +348,6 @@ with builtins // { sources = import ./nix/sources.nix; };
         hack-font
         hasklig
         hyperscrypt-font
-        jetbrains-mono
         liberation_ttf
         noto-fonts-emoji
         oxygenfonts
