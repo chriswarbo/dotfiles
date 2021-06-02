@@ -186,7 +186,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.allowCollisions pkgs.devCli)  # binutils and gcc both provide bin/ld
       (pkgs.allowCollisions pkgs.docCli)  # Allow fonts to conflict
 
-      (pkgs.callPackage ./dbeaver.nix {})
+      pkgs.dbeaver
       (pkgs.callPackage ./displayplacer.nix { inherit sources; })
       (pkgs.callPackage ./ticketCombine.nix {})
 
@@ -449,6 +449,8 @@ with builtins // { sources = import ./nix/sources.nix; };
         inherit (import <nixpkgs> {})
           gnumeric
         ;
+
+        inherit (self.nixpkgs2009) aws-sam-cli;
 
         artemis-tools = self.macOSCompilerFix.callPackage
           <dotfiles/artemis-tools> {};

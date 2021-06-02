@@ -102,11 +102,11 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "sha256": "1z20y0lblb452h2gghgds34g7lrj7v8gfhz66w687ws8jqdm3bzz",
+        "sha256": "1q5dnylr4w1xqn3qxx7hn0pn01pcwdmsy70cjs01dn8b50ppc93g",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/df8e3bd.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/2979703.tar.gz",
         "url_template": "https://github.com/NixOS/nixpkgs/archive/<version>.tar.gz",
-        "version": "df8e3bd"
+        "version": "2979703"
     },
     "postman": {
         "name": "postman.zip",

@@ -6,9 +6,7 @@
     file = androidenv.emulateApp ({
       abiVersion      = "x86";
       platformVersion = "28";
-      sdkExtraArgs    = {
-        emulatorVersion = "30.0.2";
-      } // (args.sdkExtraArgs or {});
+      sdkExtraArgs    = args.sdkExtraArgs or {};
     } // args) + "/bin/run-test-emulator";
   };
 
