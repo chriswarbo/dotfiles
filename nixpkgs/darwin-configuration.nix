@@ -547,6 +547,32 @@ with builtins // { sources = import ./nix/sources.nix; };
           withNix = x: { buildInputs = []; } // x;
         });
 
+        sbt = self.mkBin {
+          name  = "sbt";
+          paths = [ super.sbt ];
+          script = ''
+            #!/usr/bin/env bash
+            set -e
+
+            F=""
+            [[ -e shellDeps.nix     ]] && F=shellDeps.nix
+            [[ -e nix/shellDeps.nix ]] && F=nix/shellDeps.nix
+
+            [[ -n "$F" ]] &&
+              exec nix run -L -f "$F" -c sbt "$@"
+
+            if [[ -e shell.nix       ]] ||
+               [[ -e default.nix     ]] ||
+               [[ -e nix/shell.nix   ]] ||
+               [[ -e nix/default.nix ]]
+            then
+              exec nix-shell --run "sbt $*"
+            fi
+
+            exec sbt "$@"
+          '';
+        };
+
         # Scripts to bind to hotkeys
         shortcuts = self.callPackage ./shortcuts.nix {};
 
