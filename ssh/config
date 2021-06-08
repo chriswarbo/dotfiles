@@ -51,4 +51,8 @@ Host lner-sftp
     ForwardAgent yes
     ProxyJump lner-test
 
-Include /Users/chris/.ssh/nix-linuxkit-ssh-config
+Host nix-docker
+  User root
+  HostName 127.0.0.1
+  Port 3022
+  IdentityFile ~/.ssh/docker_rsa

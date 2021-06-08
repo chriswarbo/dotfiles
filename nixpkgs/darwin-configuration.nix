@@ -383,8 +383,20 @@ with builtins // { sources = import ./nix/sources.nix; };
 
   nix = {
     # These are based on the number of CPU cores (check 'sysctl -n hw.ncpu')
-    maxJobs    = 24;
-    buildCores = 12;
+    maxJobs       = 24;
+    buildCores    = 12;
+
+    # Build Linux derivations in a docker container
+    distributedBuilds = true;
+    buildMachines     = [
+      {
+        hostName = "nix-docker";
+        sshKey   = "/Users/chris/.ssh/docker_rsa";
+        systems  = [ "i686-linux" "x86_64-linux" ];
+        supportedFeatures = [ "kvm" "big-parallel" ];
+      }
+    ];
+
 
     nixPath = (import ./nixPath.nix).list;
 
