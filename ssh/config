@@ -56,3 +56,8 @@ Host nix-docker
   HostName 127.0.0.1
   Port 3022
   IdentityFile ~/.ssh/docker_rsa
+
+Host lner-ttk-sftp
+  User zipabout
+  HostName lner-srs-a.theticketkeeper.com
+  IdentityFile /Users/chris/setswapkeys2/id_rsa
