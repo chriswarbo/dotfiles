@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-echo "$PATH" | grep '/run/current-system/sw/bin' > /dev/null ||
-    export PATH="/run/current-system/sw/bin:$PATH"
+export PATH="/run/current-system/sw/bin:$HOME/repos/dotfiles/nixpkgs/result/bin:$HOME/.nix-profile/bin:$PATH"
 
 # See https://direnv.net/docs/hook.html
 eval "$(direnv hook bash)"
