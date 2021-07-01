@@ -191,6 +191,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.callPackage ./ticketCombine.nix {})
 
       pkgs.aws-helpers.combined
+      pkgs.aws-lambda-rie
       (pkgs.allowCollisions pkgs.cliclick)
       pkgs.loop
       pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
@@ -463,6 +464,31 @@ with builtins // { sources = import ./nix/sources.nix; };
           ../async-profiler {};
 
         aws-helpers = self.callPackage <dotfiles/aws-helpers>          {};
+
+
+        aws-lambda-rie =
+          with rec {
+            inherit (builtins) hasAttr trace;
+
+            rev     = "0e5e1f0610dcc66dd2e6e3b7f7f71871c4eb6236";
+            sha256  = "0w6zf108m7ni5sp5l5bsiarpphgvni0l8hn715ck8vhxhkp4mipn";
+            warning = "WARNING: Override for aws-lambda-rie no longer needed";
+            src     = builtins.fetchTarball {
+              inherit sha256;
+              name = "nixpkgs";
+              url  = "https://github.com/nixos/nixpkgs/archive/${rev}.tar.gz";
+            };
+            pkgsLinux = import src {
+              overlays = [];
+              config   = {};
+              system   = "x86_64-linux";
+            };
+            warn = x: if builtins.hasAttr "aws-lambda-rie" super
+                         then trace warning x
+                         else x;
+          };
+          warn pkgsLinux.aws-lambda-rie;
+
         cliclick    = self.callPackage <dotfiles/nixpkgs/cliclick.nix> {};
 
         # Patch Emacs so its window is better behaved on macOS (e.g. for tiling)

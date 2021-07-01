@@ -1,4 +1,4 @@
-{ awscli, bash, buildEnv, jq, lib, mkBin, python3 }:
+{ awscli, bash, buildEnv, jq, lib, mkBin, pkgs, python3 }:
 
 rec {
   api-info = mkBin {
@@ -48,6 +48,11 @@ rec {
 
   combined = buildEnv {
     name  = "aws-helpers";
-    paths = [ api-info healthcheck login kinesis-consumer ];
+    paths = [
+      api-info
+      healthcheck
+      login
+      kinesis-consumer
+    ];
   };
 }
