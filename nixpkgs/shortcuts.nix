@@ -96,7 +96,7 @@ with rec {
   # Tie the knot, so 'self' works
   shellCommands = makeCommands shellCommands;
 
-  y-monad-src = /Users/chris/repos/y-monad;
+  y-monad-src = <home/repos/y-monad>;
 
   y-monad = callPackage y-monad-src { inherit spaces; };
 

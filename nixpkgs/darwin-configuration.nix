@@ -169,7 +169,7 @@ with builtins // { sources = import ./nix/sources.nix; };
     # don't need to maintain long lists of things on different machines.
     systemPackages = map (n: getAttr n pkgs) [
       "artemis-tools"
-      "async-profiler"
+      #"async-profiler"
       "cmus"
       "devGui"
       "direnv"  # Needed by lorri
@@ -191,7 +191,7 @@ with builtins // { sources = import ./nix/sources.nix; };
       (pkgs.callPackage ./ticketCombine.nix {})
 
       pkgs.aws-helpers.combined
-      pkgs.cliclick
+      (pkgs.allowCollisions pkgs.cliclick)
       pkgs.loop
       pkgs.shortcuts.package  # Commands used by our keyboard shortcuts
       pkgs.wrappedShell
@@ -256,7 +256,7 @@ with builtins // { sources = import ./nix/sources.nix; };
 
     # Android apps
     [
-      (pkgs.androidApp {
+      /*(pkgs.androidApp {
         name    = "trainline";
         package = "com.thetrainline";
         app     = pkgs.apkpure {
@@ -265,7 +265,7 @@ with builtins // { sources = import ./nix/sources.nix; };
           path   =
             "trainline-buy-cheap-european-train-bus-tickets/com.thetrainline";
         };
-      })
+      })*/
     ];
 
     variables = {
@@ -589,7 +589,10 @@ with builtins // { sources = import ./nix/sources.nix; };
         shortcuts = self.callPackage ./shortcuts.nix {};
 
         # Broken in nixpkgs, but we don't care at the moment
-        stylish-haskell = self.dummyBuild "dummy-stylish-haskell";
+        stylish-haskell   = self.dummyBuild "dummy-stylish-haskell";
+        haskell-tng       = self.dummyBuild "dummy-haskell-tng";
+        pretty-derivation = self.dummyBuild "dummy-pretty-derivation";
+        nix-diff          = self.dummyBuild "dummy-nix-diff";
 
         wrappedShell = super.attrsToDirs' "wrappedShell" {
           bin = {
