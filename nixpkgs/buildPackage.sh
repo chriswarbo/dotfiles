@@ -9,8 +9,9 @@ NIX_PATH=$(./nixPath.sh) nix-build --show-trace systemPackages.nix
 if [[ -e result/Applications ]]
 then
   echo "Populating ~/Applications" 1>&2
-  for APP in ~/Applications/*
+  for F in ~/Applications/*
   do
+    APP=$(basename "$F")
     rm -v ~/Applications/"$APP"
   done
   for F in result/Applications/*
