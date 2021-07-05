@@ -620,12 +620,10 @@ with builtins // { sources = import ./nix/sources.nix; };
         pretty-derivation = self.dummyBuild "dummy-pretty-derivation";
         nix-diff          = self.dummyBuild "dummy-nix-diff";
 
-        wrappedShell = super.attrsToDirs' "wrappedShell" {
-          bin = {
-            inherit (self.warbo-utilities-scripts)
-              wrappedShell
-            ;
-          };
+        wrappedShell = super.mkBin {
+          name  = "wrappedShell";
+          file  = self.warbo-utilities-scripts.wrappedShell;
+          paths = [ self.bash self.coreutils ];
         };
 
         yabai =
