@@ -8,19 +8,19 @@
 Host github.com-warbo
   HostName github.com
   User git
-  IdentityFile /Users/chris/.ssh/warbo_rsa
+  IdentityFile ~/.ssh/warbo_rsa
 
 # Might as well provide this alias too, but github.com will also work
 Host github.com-chriswarbo
   HostName github.com
   User git
-  IdentityFile /Users/chris/.ssh/id_rsa
+  IdentityFile ~/.ssh/id_rsa
 
 Host dev-bastion
     HostName 3.9.24.243
     User ec2-user
     ForwardAgent yes
-    IdentityFile /Users/chris/.ssh/zipabout-london-dev.pem
+    IdentityFile ~/.ssh/zipabout-london-dev.pem
     AddKeysToAgent yes
 
 Host dev-subnet
@@ -29,25 +29,25 @@ Host dev-subnet
 
 Host prod-bastion
     User ec2-user
-    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    IdentityFile ~/.ssh/prod-bastion-chrisw-2020-12-01.pem
     HostName 18.132.183.139
 
 Host prod-bastion2
     User ec2-user
-    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    IdentityFile ~/.ssh/prod-bastion-chrisw-2020-12-01.pem
     HostName 18.133.94.117
 
 Host lner-test
     HostName 10.5.48.125
     User ec2-user
-    IdentityFile /Users/chris/.ssh/prod-bastion-chrisw-2020-12-01.pem
+    IdentityFile ~/.ssh/prod-bastion-chrisw-2020-12-01.pem
     ForwardAgent yes
     ProxyJump prod-bastion
 
 Host lner-sftp
     HostName 10.226.28.43
     User Zipabout
-    IdentityFile /Users/chris/setswapkeys/id_rsa
+    IdentityFile ~/setswapkeys/id_rsa
     ForwardAgent yes
     ProxyJump lner-test
 
@@ -60,4 +60,4 @@ Host nix-docker
 Host lner-ttk-sftp
   User zipabout
   HostName lner-srs-a.theticketkeeper.com
-  IdentityFile /Users/chris/setswapkeys2/id_rsa
+  IdentityFile ~/setswapkeys2/id_rsa
